@@ -15,8 +15,11 @@ const teacherService = require('../services/teacher.service');
 const studentService = require('../services/student.service');
 
 async function seedAdmin() {
-  const email = process.env.ADMIN_EMAIL || 'admin@schoolerp.com';
-  const password = process.env.ADMIN_PASSWORD || 'Admin@123';
+  const email = process.env.ADMIN_EMAIL || 'admin@school.com';
+  const password = process.env.ADMIN_PASSWORD || 'admin@123';
+
+  // Clean up any users with null email first
+  await User.deleteMany({ email: null });
 
   const existing = await User.findOne({ email, role: 'admin' });
   if (existing) {
@@ -229,6 +232,39 @@ async function seedStudents(domains) {
 async function run() {
   const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/school_erp';
   await connectDB(mongoUri);
+
+  // Clear existing data
+  console.log('Clearing existing data...');
+  try {
+    await mongoose.connection.db.dropCollection('users');
+  } catch (error) {
+    console.log('Users collection does not exist or already dropped');
+  }
+  try {
+    await mongoose.connection.db.dropCollection('domains');
+  } catch (error) {
+    console.log('Domains collection does not exist or already dropped');
+  }
+  try {
+    await mongoose.connection.db.dropCollection('classes');
+  } catch (error) {
+    console.log('Classes collection does not exist or already dropped');
+  }
+  try {
+    await mongoose.connection.db.dropCollection('subjects');
+  } catch (error) {
+    console.log('Subjects collection does not exist or already dropped');
+  }
+  try {
+    await mongoose.connection.db.dropCollection('teachers');
+  } catch (error) {
+    console.log('Teachers collection does not exist or already dropped');
+  }
+  try {
+    await mongoose.connection.db.dropCollection('students');
+  } catch (error) {
+    console.log('Students collection does not exist or already dropped');
+  }
 
   const admin = await seedAdmin();
   const domains = await seedDomainsAndClasses();

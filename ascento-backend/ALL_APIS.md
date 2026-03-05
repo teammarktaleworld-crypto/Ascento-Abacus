@@ -54,8 +54,8 @@ Students are mapped to:
 **Request:**
 ```json
 {
-  "email": "admin@schoolerp.com",
-  "password": "Admin@123"
+  "email": "admin@school.com",
+  "password": "admin@123"
 }
 ```
 
@@ -69,9 +69,10 @@ Students are mapped to:
     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "user": {
       "_id": "507f1f77bcf86cd799439011",
+      "fullName": "Super Admin",
       "email": "admin@school.com",
       "role": "admin",
-      "fullName": "School Admin"
+      "profileId": null
     }
   }
 }
