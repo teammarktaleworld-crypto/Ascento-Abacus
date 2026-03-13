@@ -27,6 +27,13 @@ const TeacherApplicationSchema = new mongoose.Schema(
     expectedSalary: { type: Number, min: 0, default: null },
     availabilityDate: { type: Date, default: null },
     resume: FileSchema,
+    supportingDocuments: [
+      {
+        name: { type: String, trim: true },
+        url: { type: String, trim: true },
+        publicId: { type: String, trim: true }
+      }
+    ],
     profilePhoto: FileSchema,
     status: {
       type: String,

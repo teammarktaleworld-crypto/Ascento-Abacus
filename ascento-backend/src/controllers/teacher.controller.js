@@ -16,6 +16,16 @@ const getTeacher = asyncHandler(async (req, res) => {
   res.json(data);
 });
 
+const updateTeacher = asyncHandler(async (req, res) => {
+  const data = await teacherService.updateTeacher(req.params.id, req.body);
+  res.json(data);
+});
+
+const deleteTeacher = asyncHandler(async (req, res) => {
+  const data = await teacherService.deleteTeacher(req.params.id);
+  res.json(data);
+});
+
 const myClasses = asyncHandler(async (req, res) => {
   const data = await teacherService.getTeacherClasses(req.user);
   res.json(data);
@@ -30,6 +40,8 @@ module.exports = {
   createTeacher,
   listTeachers,
   getTeacher,
+  updateTeacher,
+  deleteTeacher,
   myClasses,
   myClassStudents
 };

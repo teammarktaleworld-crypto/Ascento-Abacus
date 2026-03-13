@@ -306,10 +306,22 @@ async function studentProgress(studentId, user) {
   };
 }
 
+async function deleteStudent(studentId, user) {
+  const student = await Student.findById(studentId);
+  await ensureStudentAccess(user, student);
+
+  await Parent.updateOne({ _id: student.parentId }, { $pull: { children: student._id } });
+  await Student.deleteOne({ _id: student._id });
+  await User.deleteOne({ _id: student.userId });
+
+  return { message: 'Student deleted successfully' };
+}
+
 module.exports = {
   createStudent,
   listStudents,
   getStudentById,
   updateStudent,
-  studentProgress
+  studentProgress,
+  deleteStudent
 };

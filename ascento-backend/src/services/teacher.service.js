@@ -1,6 +1,7 @@
 const User = require('../models/user.model');
 const Teacher = require('../models/teacher.model');
 const ClassModel = require('../models/class.model');
+const Subject = require('../models/subject.model');
 const Student = require('../models/student.model');
 const { parsePagination } = require('../utils/pagination');
 const { randomPassword, hashPassword } = require('../utils/password');
@@ -92,6 +93,78 @@ async function getTeacherById(id) {
   return teacher;
 }
 
+async function updateTeacher(id, payload) {
+  const teacher = await Teacher.findById(id);
+  if (!teacher) throw { status: 404, message: 'Teacher not found' };
+
+  const nextEmail = payload.email ? payload.email.toLowerCase() : teacher.email;
+  const nextPhone = payload.phone || teacher.phone;
+
+  const duplicateTeacher = await Teacher.findOne({
+    _id: { $ne: teacher._id },
+    $or: [{ email: nextEmail }, { phone: nextPhone }]
+  });
+  if (duplicateTeacher) {
+    throw { status: 409, message: 'Teacher with same email/phone already exists' };
+  }
+
+  const duplicateUser = await User.findOne({
+    _id: { $ne: teacher.userId },
+    $or: [{ email: nextEmail }, { phone: nextPhone }]
+  });
+  if (duplicateUser) {
+    throw { status: 409, message: 'User with same email/phone already exists' };
+  }
+
+  const fields = [
+    'name',
+    'phone',
+    'domainIds',
+    'subjectIds',
+    'assignedClassIds',
+    'experience',
+    'qualification',
+    'isActive'
+  ];
+
+  for (const key of fields) {
+    if (Object.prototype.hasOwnProperty.call(payload, key)) {
+      teacher[key] = payload[key];
+    }
+  }
+
+  teacher.email = nextEmail;
+  await teacher.save();
+
+  const user = await User.findById(teacher.userId);
+  if (user) {
+    user.fullName = teacher.name;
+    user.email = teacher.email;
+    user.phone = teacher.phone;
+    if (Object.prototype.hasOwnProperty.call(payload, 'isActive')) {
+      user.isActive = payload.isActive;
+    }
+    await user.save();
+  }
+
+  return teacher;
+}
+
+async function deleteTeacher(id) {
+  const teacher = await Teacher.findById(id);
+  if (!teacher) throw { status: 404, message: 'Teacher not found' };
+
+  await Promise.all([
+    ClassModel.updateMany({ homeroomTeacherId: teacher._id }, { $set: { homeroomTeacherId: null } }),
+    Subject.updateMany({ teacherId: teacher._id }, { $set: { teacherId: null } })
+  ]);
+
+  await Teacher.deleteOne({ _id: teacher._id });
+  await User.deleteOne({ _id: teacher.userId });
+
+  return { message: 'Teacher deleted successfully' };
+}
+
 async function getTeacherClasses(user) {
   const teacher = await Teacher.findOne({ userId: user.userId });
   if (!teacher) throw { status: 404, message: 'Teacher profile not found' };
@@ -161,6 +234,8 @@ module.exports = {
   createTeacher,
   listTeachers,
   getTeacherById,
+  updateTeacher,
+  deleteTeacher,
   getTeacherClasses,
   getTeacherClassStudents,
   getTeacherStudents

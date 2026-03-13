@@ -1,3013 +1,984 @@
-# School ERP Backend API Documentation
+# School ERP Backend Complete API Contract
 
-## Tech Stack
-- Node.js
-- Express.js
-- MongoDB + Mongoose
-- JWT Authentication
-- RBAC Authorization
-- Joi Validation
-- Cloudinary Upload Support
-- node-cron Reminder Jobs
-- Swagger Documentation
-- dotenv Environment Config
+## Base URL
+https://ascento-abacus-ow3u.onrender.com
 
-## Scalable Project Structure
+## Files Used To Build This Contract
+- Routes: src/routes/*.routes.js + src/routes/index.js + src/app.js
+- Validation: src/validators/*.validation.js
+- Response logic: src/controllers/*.controller.js + src/services/*.service.js
+- Data fields: src/models/*.model.js
 
-```text
-src/
-  controllers/
-  routes/
-  models/
-  middlewares/
-  services/
-  utils/
-  config/
-  validators/
-  docs/
-server.js
+## Authorization
+Protected APIs require:
+
+Authorization: Bearer <accessToken>
+
+Role values:
+- admin
+- teacher
+- student
+- parent
+
+## Shared Error Format
+```json
+{
+  "message": "Error text",
+  "details": ["optional validation errors"]
+}
 ```
 
-## Roles and Access
-- **Admin**: Full access to all resources
-- **Teacher**: Assigned classes/students only
-- **Student**: Own data only
-- **Parent**: Own child data only
-
-## Supported Domains
-- Vedic Math
-- Abacus
-- Generic School (Class 1 to Class 12)
-
-Students are mapped to:
-- domain
-- class
-- section
+## Shared Pagination Format
+Most listing APIs return:
+```json
+{
+  "data": [],
+  "total": 0,
+  "page": 1,
+  "limit": 20
+}
+```
 
 ---
 
+## 1) System APIs
 
+### GET /
+Auth: Public
 
+Response 200:
+```json
+{
+  "service": "School ERP Backend API",
+  "version": "2.0.0",
+  "docs": "/docs",
+  "health": "/health"
+}
+```
 
+### GET /health
+Auth: Public
 
+Response 200:
+```json
+{
+  "status": "ok",
+  "timestamp": "ISO date"
+}
+```
 
+### GET /docs
+Auth: Public
+Response: HTML documentation page
 
+### GET /docs.json
+Auth: Public
+Response: OpenAPI JSON
 
-## Authentication APIs
+---
 
-### 1. Admin Login
-**POST** `/auth/admin/login`
+## 2) Authentication APIs
 
-**Request:**
+### POST /auth/admin/login
+Auth: Public
+Body:
 ```json
 {
   "email": "admin@school.com",
-  "password": "admin@123"
+  "password": "min 6 chars"
 }
 ```
-
-**Success Response (200):**
+Response 200:
 ```json
 {
-  "success": true,
-  "message": "Login successful",
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "_id": "507f1f77bcf86cd799439011",
-      "fullName": "Super Admin",
-      "email": "admin@school.com",
-      "role": "admin",
-      "profileId": null
-    }
+  "accessToken": "jwt",
+  "refreshToken": "jwt",
+  "user": {
+    "id": "ObjectId",
+    "fullName": "string",
+    "email": "string|null",
+    "phone": "string|null",
+    "username": "string|null",
+    "role": "admin",
+    "profileId": "ObjectId|null"
   }
 }
 ```
 
-**Error Responses:**
-- **401 Unauthorized**: Invalid email or password
-- **400 Bad Request**: Missing required fields
+### POST /auth/teacher/login
+Auth: Public
+Body:
+```json
+{
+  "identifier": "teacherCode or email",
+  "password": "min 6 chars"
+}
+```
+Response 200: same token object as above (role teacher)
+
+### POST /auth/student/login
+Auth: Public
+Body:
+```json
+{
+  "identifier": "username or rollNumber or studentCode",
+  "password": "min 6 chars"
+}
+```
+Response 200: same token object as above (role student)
+
+### POST /auth/parent/request-otp
+Auth: Public
+Body:
+```json
+{
+  "phone": "string"
+}
+```
+or
+```json
+{
+  "email": "string"
+}
+```
+Response 200:
+```json
+{
+  "message": "OTP generated and sent",
+  "otpCodeForTesting": "123456",
+  "destinationPhone": "string"
+}
+```
+
+### POST /auth/parent/login
+Auth: Public
+Body with OTP:
+```json
+{
+  "phone": "string",
+  "otp": "6 digits"
+}
+```
+Body with password:
+```json
+{
+  "email": "string",
+  "password": "min 6 chars"
+}
+```
+Response 200: same token object as above (role parent)
+
+### POST /auth/refresh
+Auth: Public
+Body:
+```json
+{
+  "refreshToken": "jwt"
+}
+```
+Response 200:
+```json
+{
+  "accessToken": "jwt"
+}
+```
+
+### GET /auth/me
+Auth: Logged in user
+Response 200:
+```json
+{
+  "_id": "ObjectId",
+  "fullName": "string",
+  "email": "string|null",
+  "phone": "string|null",
+  "username": "string|null",
+  "role": "admin|teacher|student|parent",
+  "profileId": "ObjectId|null",
+  "isActive": true,
+  "lastLoginAt": "ISO date",
+  "createdAt": "ISO date",
+  "updatedAt": "ISO date"
+}
+```
 
 ---
 
-### 2. Teacher Login
-**POST** `/auth/teacher/login`
+## 3) Public Application APIs
 
-**Request:**
+### POST /admission/apply
+Auth: Public
+Body schema:
+- studentFullName required
+- dateOfBirth required
+- gender required (male, female, other)
+- domainId required
+- classId optional
+- parentName required
+- parentPhone required
+- optional: parentEmail, address, previousSchool, previousMarks, documents, profilePhoto, profilePhotoBase64, documentUploads, medicalNotes, note
+
+Sample body:
 ```json
 {
-  "email": "teacher1@schoolerp.com",
-  "password": "Teacher@123"
-}
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "Login successful",
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "_id": "507f1f77bcf86cd799439012",
-      "email": "teacher1@schoolerp.com",
-      "role": "teacher",
-      "fullName": "Amit Sharma",
-      "qualification": "B.Tech",
-      "phone": "9000000001"
-    }
-  }
-}
-```
-
-**Error Response:**
-- **401 Unauthorized**: Invalid credentials
-- **400 Bad Request**: Missing required fields
-
-*Note: Use seeded test teachers (teacher1@schoolerp.com through teacher5@schoolerp.com) with password `Teacher@123`*
-
----
-
-### 3. Student Login
-**POST** `/auth/student/login`
-
-**Request:**
-```json
-{
-  "identifier": "STU001",
-  "password": "studentPass123"
-}
-```
-*Note: identifier can be either username or roll number*
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "Login successful",
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "_id": "507f1f77bcf86cd799439013",
-      "username": "STU001",
-      "role": "student",
-      "fullName": "Raj Kumar",
-      "class": "Class 10",
-      "section": "A"
-    }
-  }
-}
-```
-
-**Error Response:**
-- **401 Unauthorized**: Invalid identifier or password
-- **400 Bad Request**: Missing required fields
-
----
-
-### 4. Parent Request OTP
-**POST** `/auth/parent/request-otp`
-
-**Request:**
-```json
-{
-  "phone": "+919876543210"
-}
-```
-*OR*
-```json
-{
-  "email": "parent@email.com"
-}
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "OTP sent successfully",
-  "data": {
-    "otpId": "507f1f77bcf86cd799439014",
-    "expiresIn": 600,
-    "contact": "****3210"
-  }
-}
-```
-
-**Error Response:**
-- **404 Not Found**: Parent not registered with this contact
-- **400 Bad Request**: Invalid phone or email format
-
----
-
-### 5. Parent Login with OTP/Password
-**POST** `/auth/parent/login`
-
-**Request (with OTP):**
-```json
-{
-  "phone": "+919876543210",
-  "otp": "123456"
-}
-```
-
-**Request (with Password):**
-```json
-{
-  "email": "parent@email.com",
-  "password": "parentPass123"
-}
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "Login successful",
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "_id": "507f1f77bcf86cd799439015",
-      "phone": "+919876543210",
-      "role": "parent",
-      "fullName": "Mrs. Priya Kumar",
-      "childName": "Raj Kumar"
-    }
-  }
-}
-```
-
-**Error Response:**
-- **401 Unauthorized**: Invalid OTP or password
-- **400 Bad Request**: Missing required fields
-
----
-
-### 6. Refresh Access Token
-**POST** `/auth/refresh`
-
-**Request:**
-```json
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "Token refreshed",
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "expiresIn": 3600
-  }
-}
-```
-
-**Error Response:**
-- **401 Unauthorized**: Invalid or expired refresh token
-
----
-
-### 7. Get Current User Profile
-**GET** `/auth/me`
-
-**Headers:**
-```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "_id": "507f1f77bcf86cd799439016",
-    "email": "user@school.com",
-    "role": "student",
-    "fullName": "Raj Kumar",
-    "class": "Class 10",
-    "section": "A",
-    "createdAt": "2026-01-15T10:30:00Z"
-  }
-}
-```
-
-**Error Response:**
-- **401 Unauthorized**: Missing or invalid token
-
----
-
-
-
-
-
-
-
-
-
-## Teacher Application APIs
-
-### 1. Submit Teacher Application
-**POST** `/teacher/apply`
-
-**Description:** Public API for applying as a teacher. No authentication required.
-
-**Request (Form Data/Multipart):**
-```
-fullName: John Doe
-email: john.doe@email.com
-phone: +919876543210
-qualification: B.Tech
-experience: 5
-subjects: Mathematics,Science
-domainId: 507f1f77bcf86cd799439017
-resume: <file>
-profilePhoto: <file>
-```
-
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "message": "Application submitted successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439018",
-    "fullName": "John Doe",
-    "email": "john.doe@email.com",
-    "phone": "+919876543210",
-    "qualification": "B.Tech",
-    "experience": 5,
-    "subjects": ["Mathematics", "Science"],
-    "status": "pending",
-    "resumeUrl": "https://cloudinary.com/...",
-    "profilePhotoUrl": "https://cloudinary.com/...",
-    "createdAt": "2026-03-05T10:30:00Z"
-  }
-}
-```
-
-**Error Response:**
-- **400 Bad Request**: Validation failed
-- **500 Internal Server Error**: File upload failed
-
----
-
-### 2. Get All Teacher Applications
-**GET** `/admin/teacher-applications`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Query Parameters:**
-```
-status: pending (optional)
-search: John (optional)
-page: 1 (optional)
-limit: 10 (optional)
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "applications": [
-      {
-        "_id": "507f1f77bcf86cd799439018",
-        "fullName": "John Doe",
-        "email": "john.doe@email.com",
-        "phone": "+919876543210",
-        "status": "pending",
-        "createdAt": "2026-03-05T10:30:00Z"
-      }
-    ],
-    "pagination": {
-      "page": 1,
-      "limit": 10,
-      "total": 25,
-      "pages": 3
-    }
-  }
-}
-```
-
-**Error Response:**
-- **401 Unauthorized**: Admin token required
-- **403 Forbidden**: Insufficient permissions
-
----
-
-### 3. Approve Teacher Application
-**POST** `/admin/approve-teacher/:id`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-Content-Type: application/json
-```
-
-**Request:**
-```json
-{
-  "assignDomain": "507f1f77bcf86cd799439017",
-  "assignClasses": ["507f1f77bcf86cd799439019", "507f1f77bcf86cd799439020"]
-}
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "Teacher approved and account created",
-  "data": {
-    "_id": "507f1f77bcf86cd799439021",
-    "email": "john.doe@email.com",
-    "role": "teacher",
-    "fullName": "John Doe",
-    "credentials": {
-      "username": "john.doe",
-      "tempPassword": "Temp@1234567"
-    },
-    "createdAt": "2026-03-05T10:35:00Z"
-  }
-}
-```
-
-**Error Response:**
-- **404 Not Found**: Application not found
-- **400 Bad Request**: Invalid domain or class IDs
-
----
-
-### 4. Reject Teacher Application
-**POST** `/admin/reject-teacher/:id`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Request:**
-```json
-{
-  "remark": "Does not meet qualification requirements"
-}
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "Application rejected",
-  "data": {
-    "_id": "507f1f77bcf86cd799439018",
-    "status": "rejected",
-    "remark": "Does not meet qualification requirements",
-    "updatedAt": "2026-03-05T10:40:00Z"
-  }
-}
-```
-
-**Error Response:**
-- **404 Not Found**: Application not found
-- **400 Bad Request**: Application already processed
-
----
-
-## Admin Panel APIs
-
-### 1. Create Teacher
-**POST** `/admin/create-teacher`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Request:**
-```json
-{
-  "fullName": "Mrs. Sarah Johnson",
-  "email": "sarah.johnson@school.com",
-  "phone": "+919876543211",
-  "qualification": "M.Sc Physics",
-  "experience": 8,
-  "subjects": ["Physics", "Science"],
-  "domainId": "507f1f77bcf86cd799439017"
-}
-```
-
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "message": "Teacher created successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439022",
-    "email": "sarah.johnson@school.com",
-    "role": "teacher",
-    "fullName": "Mrs. Sarah Johnson",
-    "credentials": {
-      "username": "sarah.johnson",
-      "tempPassword": "TempPass@1234"
-    }
-  }
-}
-```
-
-**Error Response:**
-- **400 Bad Request**: Email already exists
-- **422 Unprocessable Entity**: Validation failed
-
----
-
-### 2. Create Student (Admin Panel)
-**POST** `/admin/create-student`
-
-**Description:** 
-Alias for `/students` endpoint designed specifically for admin dashboard workflows. Uses identical validation and logic.
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-Content-Type: application/json (or multipart/form-data for file uploads)
-```
-
-**Request (JSON):**
-```json
-{
-  "fullName": "Raj Kumar",
-  "dateOfBirth": "2012-05-15",
+  "studentFullName": "Student Name",
+  "dateOfBirth": "2014-06-01",
   "gender": "male",
-  "domainId": "507f1f77bcf86cd799439017",
-  "classId": "507f1f77bcf86cd799439023",
-  "className": "Class 10",
-  "section": "A",
-  "rollNumber": "STU010",
-  "parentName": "Mr. Ramesh Kumar",
-  "parentPhone": "+919876543212",
-  "parentEmail": "ramesh.kumar@email.com",
-  "address": "123 Main Street, City",
-  "city": "Mumbai",
-  "state": "Maharashtra",
-  "pincode": "400001",
-  "admissionDate": "2025-06-01",
-  "previousSchool": "ABC School",
-  "previousMarks": [
-    {
-      "examName": "Class 9 Final",
-      "percentage": 85,
-      "year": 2024
-    }
-  ],
-  "profilePhotoBase64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ...",
-  "documents": [
-    {
-      "name": "Birth Certificate",
-      "url": "https://example.com/birth-cert.pdf"
-    }
-  ],
+  "domainId": "ObjectId",
+  "classId": "ObjectId",
+  "parentName": "Parent Name",
+  "parentPhone": "9999999999",
+  "parentEmail": "parent@example.com"
+}
+```
+Response 201: created StudentAdmission document
+
+### POST /teacher/apply
+Auth: Public
+Body schema:
+- fullName, email, phone, qualification, experience required
+- subjects required array with at least 1 value
+- resume or resumeBase64 required
+- at least one supporting document required: supportingDocuments[] or documentUploads[]
+- optional: profilePhoto/profilePhotoBase64, specialization, expectedSalary, coverLetter, etc.
+
+Sample body:
+```json
+{
+  "fullName": "Teacher Name",
+  "email": "teacher@example.com",
+  "phone": "9999999999",
+  "qualification": "B.Ed",
+  "experience": 3,
+  "subjects": ["Math"],
+  "resumeBase64": "base64...",
   "documentUploads": [
     {
-      "name": "Transfer Certificate",
-      "base64": "data:application/pdf;base64,JVBERi0xLjQ..."
+      "name": "Degree Certificate",
+      "base64": "base64..."
+    }
+  ]
+}
+```
+Response 201: created TeacherApplication document
+
+Note: Admin endpoint `POST /admin/create-teacher` creates teacher directly and does not require resume/documents.
+
+---
+
+## 4) Teacher Portal APIs
+Auth: teacher
+
+### GET /teacher/classes
+Response 200: array of Class documents assigned to teacher
+
+### GET /teacher/students
+Query: classId optional, search optional, page, limit
+Response 200: pagination with student rows from teacher classes
+
+### POST /teacher/attendance
+Body:
+```json
+{
+  "date": "2026-03-13",
+  "classId": "ObjectId",
+  "note": "optional",
+  "records": [
+    { "studentId": "ObjectId", "status": "present" }
+  ]
+}
+```
+Response 201:
+```json
+{
+  "count": 1,
+  "data": [
+    {
+      "_id": "ObjectId",
+      "date": "ISO date",
+      "classId": "ObjectId",
+      "studentId": "ObjectId",
+      "status": "present|absent|late",
+      "markedBy": "ObjectId|null",
+      "note": "string"
     }
   ]
 }
 ```
 
-**Request (Multipart/Form-Data for File Upload):**
-```
-fullName: Raj Kumar
-dateOfBirth: 2012-05-15
-gender: male
-domainId: 507f1f77bcf86cd799439017
-classId: 507f1f77bcf86cd799439023
-className: Class 10
-section: A
-rollNumber: STU010
-parentName: Mr. Ramesh Kumar
-parentPhone: +919876543212
-parentEmail: ramesh.kumar@email.com
-address: 123 Main Street, City
-admissionDate: 2025-06-01
-previousSchool: ABC School
-previousMarks: [{"examName":"Class 9 Final","percentage":85,"year":2024}]
-profilePhoto: <file upload>
-documents: [{"name":"Birth Certificate","url":"..."}]
-documentUploads: [<file upload 1>, <file upload 2>]
-```
-
-**Field Descriptions:**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `fullName` | String | Yes | Student's full name |
-| `dateOfBirth` | Date | Yes | Format: YYYY-MM-DD (calculates age automatically) |
-| `gender` | String | Yes | Options: `male`, `female`, `other` |
-| `domainId` | ObjectId | Yes | Domain ID (Vedic Math, Abacus, Generic School) |
-| `classId` | ObjectId | Yes | Class ID (must belong to the selected domain) |
-| `className` | String | Yes | Class name for easy reference |
-| `section` | String | Yes | Section (A, B, C, etc.) |
-| `rollNumber` | String | Yes | Unique roll number per class |
-| `parentName` | String | Yes | Parent/Guardian full name |
-| `parentPhone` | String | Yes | Parent phone number for contact |
-| `parentEmail` | String | No | Parent email address |
-| `address` | String | No | Student's residential address |
-| `city` | String | No | City name |
-| `state` | String | No | State name |
-| `pincode` | String | No | Postal code |
-| `admissionDate` | Date | No | Admission date (default: today) |
-| `previousSchool` | String | No | Previous school name |
-| `previousMarks` | Array | No | Array of previous exam marks with percentage and year |
-| `profilePhoto` | File | No | Student profile photo (PNG/JPG) |
-| `profilePhotoBase64` | String | No | Profile photo as base64 string |
-| `documents` | Array | No | Pre-uploaded documents with name and URL |
-| `documentUploads` | Array | No | Documents as base64 (e.g., birth certificate, transfer cert) |
-
-**Success Response (201):**
+### POST /teacher/marks
+### POST /teacher/add-marks
+Body:
 ```json
 {
-  "success": true,
-  "message": "Student created successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439024",
-    "userId": "507f1f77bcf86cd799439100",
-    "username": "stu10",
-    "role": "student",
-    "fullName": "Raj Kumar",
-    "dateOfBirth": "2012-05-15",
-    "gender": "male",
-    "age": 13,
-    "class": "Class 10",
-    "section": "A",
-    "rollNumber": "STU010",
-    "parentId": "507f1f77bcf86cd799439025",
-    "parentName": "Mr. Ramesh Kumar",
-    "parentPhone": "+919876543212",
-    "profilePhoto": "https://cloudinary.com/school-erp/students/profile/...",
-    "documents": [
-      {
-        "name": "Birth Certificate",
-        "url": "https://cloudinary.com/school-erp/students/documents/..."
-      }
-    ],
-    "credentials": {
-      "username": "stu10",
-      "tempPassword": "StudentPass@1234"
-    },
-    "parentCredentials": {
-      "phone": "+919876543212",
-      "password": "ParentPass@5678"
-    },
-    "createdAt": "2026-03-05T10:00:00Z"
-  }
+  "examId": "ObjectId",
+  "studentId": "ObjectId",
+  "subjectId": "ObjectId",
+  "obtainedMarks": 78,
+  "totalMarks": 100
 }
-
 ```
+Response 201: Mark document (examId, studentId, subjectId populated)
 
-**Error Response:**
-- **400 Bad Request**: Roll number already exists or class doesn't belong to domain
-- **404 Not Found**: Domain or class not found
-- **422 Unprocessable Entity**: Validation failed (e.g., invalid date format)
-
----
-
-### 3. Create Class
-**POST** `/admin/create-class`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Request:**
+### POST /teacher/assignment
+Body:
 ```json
 {
-  "className": "Class 10",
-  "sections": ["A", "B", "C"],
-  "domainId": "507f1f77bcf86cd799439017",
-  "totalStrength": 120,
-  "capacity": 40
+  "title": "Homework 1",
+  "description": "optional",
+  "domainId": "ObjectId",
+  "classId": "ObjectId",
+  "subjectId": "ObjectId",
+  "dueDate": "2026-03-20",
+  "attachmentBase64": "optional",
+  "attachmentName": "optional"
 }
 ```
+Response 201: created Assignment document
 
-**Success Response (201):**
+### POST /teacher/announcement
+Body:
 ```json
 {
-  "success": true,
-  "message": "Class created successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439023",
-    "className": "Class 10",
-    "sections": ["A", "B", "C"],
-    "domain": {
-      "_id": "507f1f77bcf86cd799439017",
-      "name": "Generic School"
-    },
-    "totalEnrolled": 0,
-    "capacity": 40
-  }
+  "title": "Important",
+  "description": "optional",
+  "domainId": "ObjectId",
+  "classId": "ObjectId",
+  "subjectId": "ObjectId",
+  "fileBase64": "optional",
+  "videoLink": "optional"
 }
 ```
+Response 201: created Content document with contentType announcement
 
----
-
-### 4. Create Subject
-**POST** `/admin/create-subject`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Request:**
+### POST /teacher/publish-content
+Body:
 ```json
 {
-  "subjectName": "Physics",
-  "subjectCode": "PHY101",
-  "description": "Physics for CBSE board",
-  "domainId": "507f1f77bcf86cd799439017",
-  "classIds": ["507f1f77bcf86cd799439023"]
+  "title": "Chapter Notes",
+  "description": "optional",
+  "contentType": "notes",
+  "domainId": "ObjectId",
+  "classId": "ObjectId",
+  "subjectId": "ObjectId",
+  "fileBase64": "optional",
+  "videoLink": "optional"
 }
 ```
+Response 201: created Content document
 
-**Success Response (201):**
+### POST /teacher/schedule-class
+Body:
 ```json
 {
-  "success": true,
-  "message": "Subject created successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439026",
-    "subjectName": "Physics",
-    "subjectCode": "PHY101",
-    "description": "Physics for CBSE board",
-    "domain": "Generic School",
-    "classes": ["Class 10"]
-  }
-}
-```
-
----
-
-### 5. Assign Teacher to Class
-**POST** `/admin/assign-teacher`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Request:**
-```json
-{
-  "teacherId": "507f1f77bcf86cd799439022",
-  "classId": "507f1f77bcf86cd799439023",
-  "subjectId": "507f1f77bcf86cd799439026",
-  "section": "A"
-}
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "Teacher assigned successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439027",
-    "teacher": {
-      "_id": "507f1f77bcf86cd799439022",
-      "fullName": "Mrs. Sarah Johnson"
-    },
-    "class": "Class 10",
-    "section": "A",
-    "subject": "Physics",
-    "assignedAt": "2026-03-05T11:00:00Z"
-  }
-}
-```
-
----
-
-### 6. Get Admin Dashboard
-**GET** `/admin/dashboard`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "totalStudents": 450,
-    "totalTeachers": 30,
-    "totalClasses": 12,
-    "totalDomains": 3,
-    "attendanceToday": {
-      "present": 420,
-      "absent": 25,
-      "late": 5
-    },
-    "upcomingClasses": [
-      {
-        "_id": "507f1f77bcf86cd799439028",
-        "title": "Physics Class - Chapter 5",
-        "class": "Class 10",
-        "teacher": "Mrs. Sarah Johnson",
-        "scheduledFor": "2026-03-05T14:00:00Z"
-      }
-    ],
-    "recentActivities": [
-      {
-        "type": "student_created",
-        "description": "Student 'Raj Kumar' created",
-        "timestamp": "2026-03-05T10:30:00Z"
-      }
-    ]
-  }
-}
-```
-
----
-
-### 7. Export Students List
-**GET** `/admin/export/students`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Query Parameters:**
-```
-classId: 507f1f77bcf86cd799439023 (optional)
-format: csv (or xlsx)
-```
-
-**Success Response (200):**
-```
-CSV file streaming with student data
-Content headers: Content-Type: text/csv, Content-Disposition: attachment
-```
-
----
-
-### 8. Export Report Card
-**GET** `/admin/export/report-card/:studentId`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "studentName": "Raj Kumar",
-    "rollNumber": "STU010",
-    "class": "Class 10",
-    "section": "A",
-    "subjects": [
-      {
-        "subjectName": "Physics",
-        "obtained": 85,
-        "outOf": 100,
-        "percentage": 85,
-        "grade": "A"
-      }
-    ],
-    "totalPercentage": 87,
-    "overallGrade": "A",
-    "remarks": "Excellent performance"
-  }
-}
-```
-
----
-
-## Student Management APIs
-
-### Quick Reference - Student Creation Endpoints
-
-| Endpoint | Method | Auth | Role | Use Case | Backend Route |
-|----------|--------|------|------|----------|---|
-| `/students` | POST | Yes | admin | General student registration form | `src/routes/students.routes.js` |
-| `/admin/create-student` | POST | Yes | admin | Admin dashboard student creation | `src/routes/admin.routes.js` |
-
-**Note:** Both endpoints use the same validation schema (`student.validation.js`) and call the same controller (`student.controller.js`). Choose based on your UI context.
-
----
-
-### 1. Create Student (General)
-**POST** `/students`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-Content-Type: application/json (or multipart/form-data for file uploads)
-```
-
-**Request (JSON with Base64 Photo):**
-```json
-{
-  "fullName": "Priya Sharma",
-  "dateOfBirth": "2011-08-20",
-  "gender": "female",
-  "domainId": "507f1f77bcf86cd799439017",
-  "classId": "507f1f77bcf86cd799439023",
-  "className": "Class 10",
-  "section": "B",
-  "rollNumber": "STU011",
-  "parentName": "Mrs. Meera Sharma",
-  "parentPhone": "+919876543213",
-  "parentEmail": "meera.sharma@email.com",
-  "address": "456 Oak Avenue, City",
-  "admissionDate": "2025-06-01",
-  "previousSchool": "XYZ Academy",
-  "previousMarks": [
-    {
-      "examName": "Class 9 Annual",
-      "percentage": 92,
-      "year": 2024
-    },
-    {
-      "examName": "Class 9 Half Yearly",
-      "percentage": 88,
-      "year": 2023
-    }
-  ],
-  "profilePhotoBase64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgH..."
-}
-```
-
-**Request (Multipart/Form-Data with File Upload):**
-```
-fullName: Priya Sharma
-dateOfBirth: 2011-08-20
-gender: female
-domainId: 507f1f77bcf86cd799439017
-classId: 507f1f77bcf86cd799439023
-className: Class 10
-section: B
-rollNumber: STU011
-parentName: Mrs. Meera Sharma
-parentPhone: +919876543213
-parentEmail: meera.sharma@email.com
-address: 456 Oak Avenue, City
-admissionDate: 2025-06-01
-previousSchool: XYZ Academy
-previousMarks: [{"examName":"Class 9 Annual","percentage":92,"year":2024}]
-profilePhoto: <image file>
-documents: [<pdf file 1>, <pdf file 2>]
-```
-
-**Field Descriptions:**
-
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| `fullName` | String | Yes | Student's legal full name |
-| `dateOfBirth` | Date | Yes | Format: YYYY-MM-DD |
-| `gender` | String | Yes | `male` \| `female` \| `other` |
-| `domainId` | ObjectId | Yes | Domain reference (Vedic Math/Abacus/Generic School) |
-| `classId` | ObjectId | Yes | Must belong to selected domain |
-| `className` | String | Yes | Grade level (Class 1, Class 10, Level 3, etc.) |
-| `section` | String | Yes | A, B, C, etc. |
-| `rollNumber` | String | Yes | Unique per class-section combination |
-| `parentName` | String | Yes | Parent or guardian name |
-| `parentPhone` | String | Yes | Contact number (WhatsApp preferred) |
-| `parentEmail` | String | No | Email for notifications |
-| `address` | String | No | Residential address |
-| `admissionDate` | Date | No | Defaults to today if not provided |
-| `previousSchool` | String | No | Last school attended |
-| `previousMarks` | Array | No | Array of past exam records with percentage and year |
-| `profilePhoto` | File | No | JPG/PNG image (multipart upload) |
-| `profilePhotoBase64` | String | No | Base64 encoded image string |
-| `documentUploads` | Array | No | Birth cert, transfer cert, etc. |
-
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "message": "Student created successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439029",
-    "userId": "507f1f77bcf86cd799439101",
-    "username": "stu11",
-    "fullName": "Priya Sharma",
-    "dateOfBirth": "2011-08-20",
-    "age": 14,
-    "gender": "female",
-    "role": "student",
-    "class": "Class 10",
-    "section": "B",
-    "rollNumber": "STU011",
-    "parentName": "Mrs. Meera Sharma",
-    "parentPhone": "+919876543213",
-    "profilePhoto": "https://res.cloudinary.com/your-cloud/image/upload/...",
-    "previousSchoolPerformance": {
-      "school": "XYZ Academy",
-      "averagePercentage": 90,
-      "bestExam": {
-        "name": "Class 9 Annual",
-        "percentage": 92
-      }
-    },
-    "credentials": {
-      "username": "stu11",
-      "tempPassword": "TempSTU@2024"
-    },
-    "parentCredentials": {
-      "phone": "+919876543213",
-      "password": "TempParent@2024",
-      "instructions": "Use these credentials to login to parent portal"
-    },
-    "createdAt": "2026-03-05T10:00:00Z"
-  }
-}
-```
-
-**Photo Upload - Supported Methods:**
-
-**Method 1: Base64 String (JSON)**
-```json
-{
-  "profilePhotoBase64": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
-}
-```
-
-**Method 2: Direct File (Multipart)**
-```
-POST /students
-Content-Type: multipart/form-data
-Authorization: Bearer <token>
-
-[Other fields...]
-profilePhoto: <binary file data>
-```
-
-**Error Responses:**
-- **400 Bad Request**: Roll number already exists or class doesn't belong to domain
-- **404 Not Found**: Domain or class ID invalid
-- **413 Payload Too Large**: Photo exceeds 5MB
-- **422 Unprocessable Entity**: Invalid date format or missing required fields
-
----
-
-### 2. Get All Students
-**GET** `/students`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Query Parameters:**
-```
-classId: 507f1f77bcf86cd799439023 (optional)
-search: Priya (optional)
-page: 1
-limit: 20
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "students": [
-      {
-        "_id": "507f1f77bcf86cd799439024",
-        "fullName": "Raj Kumar",
-        "username": "STU010",
-        "class": "Class 10",
-        "section": "A",
-        "rollNumber": "STU010"
-      }
-    ],
-    "pagination": {
-      "page": 1,
-      "limit": 20,
-      "total": 450,
-      "pages": 23
-    }
-  }
-}
-```
-
----
-
-### 3. Get Student by ID
-**GET** `/students/:id`
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "_id": "507f1f77bcf86cd799439024",
-    "fullName": "Raj Kumar",
-    "dateOfBirth": "2012-05-15",
-    "gender": "Male",
-    "username": "STU010",
-    "email": "raj.kumar@student.school.com",
-    "class": "Class 10",
-    "section": "A",
-    "rollNumber": "STU010",
-    "parentId": "507f1f77bcf86cd799439025",
-    "profilePhoto": "https://cloudinary.com/...",
-    "admissionDate": "2025-06-01",
-    "status": "active"
-  }
-}
-```
-
----
-
-### 4. Update Student
-**PUT** `/students/:id`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Request:**
-```json
-{
-  "fullName": "Raj Kumar Updated",
-  "phone": "+919876543214",
-  "address": "789 Pine Street, City"
-}
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "Student updated successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439024",
-    "fullName": "Raj Kumar Updated",
-    "phone": "+919876543214",
-    "address": "789 Pine Street, City"
-  }
-}
-```
-
----
-
-### 5. Get Student Progress
-**GET** `/students/:id/progress`
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "studentId": "507f1f77bcf86cd799439024",
-    "studentName": "Raj Kumar",
-    "summaryBySubject": [
-      {
-        "subjectName": "Physics",
-        "subjectId": "507f1f77bcf86cd799439026",
-        "totalMarks": 100,
-        "obtainedMarks": 85,
-        "percentage": 85,
-        "grade": "A",
-        "assessments": [
-          {
-            "examType": "UNIT_TEST",
-            "date": "2026-02-15",
-            "marksObtained": 85
-          }
-        ]
-      }
-    ],
-    "overallPercentage": 87,
-    "overallGrade": "A",
-    "attendancePercentage": 92,
-    "lastUpdated": "2026-03-05T12:00:00Z"
-  }
-}
-```
-
----
-
-## Student Creation Backend Implementation
-
-### What Happens When You Create a Student?
-
-When a student is created via either `/students` or `/admin/create-student`, the backend performs the following steps:
-
-#### 1. **Data Validation**
-- Validates request using `createStudentSchema` (Joi validator)
-- Checks required fields (name, DOB, class, roll number, parent info)
-- Validates date format and enums (gender, domain, class existence)
-
-#### 2. **Duplicate Check**
-- Verifies roll number is unique per class-section
-- Ensures class belongs to selected domain
-- Throws 409 error if conflict found
-
-#### 3. **Parent Management**
-- Checks if parent already exists by phone number
-- If exists: link student to existing parent and return parent ID
-- If new: creates new User record with PARENT role + Parent profile
-  - Auto-generates temporary password for parent
-  - Returns parent credentials in response
-
-#### 4. **Student Account Creation**
-- Creates new User record with STUDENT role
-- Generates unique username: `stu{rollNumber}` (auto-incremented if duplicate)
-- Creates temporary password for student
-- Creates Student profile linked to User and Parent
-
-#### 5. **File Uploads**
-- Handles profile photo (JPG/PNG max 5MB)
-  - Base64 string: decoded and uploaded to Cloudinary
-  - Multipart file: directly uploaded to Cloudinary
-- Uploads any attached documents (PDFs, images)
-- Folder structure: `school-erp/students/profile/` and `school-erp/students/documents/`
-
-#### 6. **Database Updates**
-- Adds student ID to parent's `children` array
-- Sets student as active
-- Links user.profileId to student._id
-- Indexes created for fast lookups (rollNumber, parentPhone, fullName)
-
-#### 7. **Response**
-- Returns complete student record
-- Includes auto-generated credentials
-- Includes parent credentials (if new parent created)
-- Calculates age from DOB
-
-### Backend Files Involved
-
-```
-src/
-├── controllers/student.controller.js       # Request handling
-├── controllers/admin.controller.js         # Admin-specific requests
-├── services/student.service.js             # Business logic (createStudent)
-├── models/student.model.js                 # Schema definition
-├── models/parent.model.js                  # Parent schema
-├── validators/student.validation.js        # Joi validation schema
-├── routes/students.routes.js               # POST /students endpoint
-├── routes/admin.routes.js                  # POST /admin/create-student endpoint
-└── utils/cloudinary.js                     # File upload handling
-```
-
-### Validation Rules
-
-```javascript
-// createStudentSchema (from student.validation.js)
-{
-  fullName: Joi.string().required(),
-  dateOfBirth: Joi.date().required(),
-  gender: Joi.string().valid('male', 'female', 'other').required(),
-  domainId: Joi.string().hex().length(24).required(),
-  classId: Joi.string().hex().length(24).required(),
-  className: Joi.string().required(),
-  section: Joi.string().required(),
-  rollNumber: Joi.string().required(),
-  parentName: Joi.string().required(),
-  parentPhone: Joi.string().pattern(/^\+?[0-9]{10,}$/).required(),
-  parentEmail: Joi.string().email().optional(),
-  address: Joi.string().optional(),
-  admissionDate: Joi.date().optional(),
-  previousSchool: Joi.string().optional(),
-  previousMarks: Joi.array().items(
-    Joi.object({
-      examName: Joi.string(),
-      percentage: Joi.number().min(0).max(100),
-      year: Joi.number()
-    })
-  ).optional(),
-  profilePhotoBase64: Joi.string().optional(),
-  profilePhoto: Joi.binary().optional(),
-  documents: Joi.array().optional(),
-  documentUploads: Joi.array().optional()
-}
-```
-
-### Error Handling
-
-| Error | Status | Cause |
-|-------|--------|-------|
-| Domain not found | 404 | Invalid domainId |
-| Class not found | 404 | Invalid classId |
-| Roll number already exists | 409 | Duplicate rollNumber |
-| Class doesn't belong to domain | 400 | Domain-Class mismatch |
-| Validation failed | 422 | Missing/invalid fields |
-| File upload failed | 500 | Cloudinary error |
-
----
-
-## Teacher Panel APIs
-
-### 1. Get Assigned Classes
-**GET** `/teacher/classes`
-
-**Headers:**
-```
-Authorization: Bearer <teacher_token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "classes": [
-      {
-        "_id": "507f1f77bcf86cd799439023",
-        "className": "Class 10",
-        "section": "A",
-        "totalStudents": 40,
-        "subject": "Physics"
-      }
-    ]
-  }
-}
-```
-
----
-
-### 2. Get Class Students
-**GET** `/teacher/students`
-
-**Headers:**
-```
-Authorization: Bearer <teacher_token>
-```
-
-**Query Parameters:**
-```
-classId: 507f1f77bcf86cd799439023
-section: A
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "students": [
-      {
-        "_id": "507f1f77bcf86cd799439024",
-        "fullName": "Raj Kumar",
-        "rollNumber": "STU010",
-        "email": "raj.kumar@student.school.com"
-      }
-    ]
-  }
-}
-```
-
----
-
-### 3. Mark Attendance
-**POST** `/teacher/attendance`
-
-**Headers:**
-```
-Authorization: Bearer <teacher_token>
-```
-
-**Request:**
-```json
-{
-  "classId": "507f1f77bcf86cd799439023",
-  "section": "A",
-  "date": "2026-03-05",
-  "attendance": [
-    {
-      "studentId": "507f1f77bcf86cd799439024",
-      "status": "present"
-    },
-    {
-      "studentId": "507f1f77bcf86cd799439030",
-      "status": "absent"
-    },
-    {
-      "studentId": "507f1f77bcf86cd799439031",
-      "status": "late"
-    }
-  ]
-}
-```
-
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "message": "Attendance marked successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439032",
-    "classId": "507f1f77bcf86cd799439023",
-    "date": "2026-03-05",
-    "totalStudents": 40,
-    "presentCount": 38,
-    "absentCount": 1,
-    "lateCount": 1
-  }
-}
-```
-
----
-
-### 4. Add Marks
-**POST** `/teacher/add-marks`
-
-**Headers:**
-```
-Authorization: Bearer <teacher_token>
-```
-
-**Request:**
-```json
-{
-  "examId": "507f1f77bcf86cd799439033",
-  "classId": "507f1f77bcf86cd799439023",
-  "subjectId": "507f1f77bcf86cd799439026",
-  "marks": [
-    {
-      "studentId": "507f1f77bcf86cd799439024",
-      "marksObtained": 85,
-      "outOf": 100
-    },
-    {
-      "studentId": "507f1f77bcf86cd799439030",
-      "marksObtained": 92,
-      "outOf": 100
-    }
-  ]
-}
-```
-
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "message": "Marks added successfully",
-  "data": {
-    "examId": "507f1f77bcf86cd799439033",
-    "classId": "507f1f77bcf86cd799439023",
-    "subjectId": "507f1f77bcf86cd799439026",
-    "marksAdded": 2,
-    "timestamp": "2026-03-05T13:00:00Z"
-  }
-}
-```
-
----
-
-### 5. Create Assignment
-**POST** `/teacher/assignment`
-
-**Headers:**
-```
-Authorization: Bearer <teacher_token>
-Content-Type: application/json
-```
-
-**Request:**
-```json
-{
-  "title": "Chapter 5 - Waves Exercise",
-  "description": "Solve all questions from exercise 5.1 and 5.2",
-  "classId": "507f1f77bcf86cd799439023",
-  "subjectId": "507f1f77bcf86cd799439026",
-  "dueDate": "2026-03-10",
-  "totalMarks": 20,
-  "instructions": "Submit in PDF format"
-}
-```
-
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "message": "Assignment created successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439034",
-    "title": "Chapter 5 - Waves Exercise",
-    "description": "Solve all questions from exercise 5.1 and 5.2",
-    "classId": "507f1f77bcf86cd799439023",
-    "subjectId": "507f1f77bcf86cd799439026",
-    "dueDate": "2026-03-10",
-    "totalMarks": 20,
-    "createdBy": "507f1f77bcf86cd799439022",
-    "createdAt": "2026-03-05T13:10:00Z"
-  }
-}
-```
-
----
-
-### 6. Post Announcement
-**POST** `/teacher/announcement`
-
-**Headers:**
-```
-Authorization: Bearer <teacher_token>
-```
-
-**Request:**
-```json
-{
-  "title": "Class 10A - Important Notice",
-  "description": "Physics practical exam will be held on March 15th. Please prepare accordingly.",
-  "classId": "507f1f77bcf86cd799439023",
-  "priority": "high"
-}
-```
-
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "message": "Announcement posted successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439035",
-    "title": "Class 10A - Important Notice",
-    "description": "Physics practical exam will be held on March 15th.",
-    "classId": "507f1f77bcf86cd799439023",
-    "postedBy": "507f1f77bcf86cd799439022",
-    "priority": "high",
-    "createdAt": "2026-03-05T13:15:00Z"
-  }
-}
-```
-
----
-
-### 7. Publish Content
-**POST** `/teacher/publish-content`
-
-**Headers:**
-```
-Authorization: Bearer <teacher_token>
-Content-Type: multipart/form-data
-```
-
-**Request (Form Data):**
-```
-title: Electromagnetic Waves - Part 1
-description: Comprehensive notes on electromagnetic waves
-contentType: notes
-classId: 507f1f77bcf86cd799439023
-subjectId: 507f1f77bcf86cd799439026
-file: <file upload>
-```
-
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "message": "Content published successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439036",
-    "title": "Electromagnetic Waves - Part 1",
-    "contentType": "notes",
-    "classId": "507f1f77bcf86cd799439023",
-    "subjectId": "507f1f77bcf86cd799439026",
-    "fileUrl": "https://cloudinary.com/...",
-    "publishedBy": "507f1f77bcf86cd799439022",
-    "publishedAt": "2026-03-05T13:20:00Z"
-  }
-}
-```
-
----
-
-### 8. Schedule Class/Online Meeting
-**POST** `/teacher/schedule-class`
-
-**Headers:**
-```
-Authorization: Bearer <teacher_token>
-```
-
-**Request:**
-```json
-{
-  "title": "Physics Class - Electromagnetic Waves",
-  "description": "Live class on electromagnetic spectrum and properties",
-  "classId": "507f1f77bcf86cd799439023",
-  "subjectId": "507f1f77bcf86cd799439026",
-  "date": "2026-03-06",
-  "startTime": "14:00",
-  "endTime": "15:00",
-  "meetingLink": "https://meet.meet.google.com/abc-defg-hij"
-}
-```
-
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "message": "Class scheduled successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439037",
-    "title": "Physics Class - Electromagnetic Waves",
-    "description": "Live class on electromagnetic spectrum and properties",
-    "classId": "507f1f77bcf86cd799439023",
-    "subjectId": "507f1f77bcf86cd799439026",
-    "scheduledFor": "2026-03-06T14:00:00Z",
-    "meetingLink": "https://meet.meet.google.com/abc-defg-hij",
-    "createdBy": "507f1f77bcf86cd799439022"
-  }
-}
-```
-
----
-
-## Content and Class APIs
-
-### 1. Get Student Content
-**GET** `/student/content`
-
-**Headers:**
-```
-Authorization: Bearer <student_token>
-```
-
-**Query Parameters:**
-```
-classId: 507f1f77bcf86cd799439023 (optional)
-subjectId: 507f1f77bcf86cd799439026 (optional)
-contentType: notes (optional - notes, pdf, video, assignment)
-page: 1
-limit: 20
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "content": [
-      {
-        "_id": "507f1f77bcf86cd799439036",
-        "title": "Electromagnetic Waves - Part 1",
-        "description": "Comprehensive notes on electromagnetic waves",
-        "contentType": "notes",
-        "subject": "Physics",
-        "fileUrl": "https://cloudinary.com/...",
-        "publishedBy": "Mrs. Sarah Johnson",
-        "publishedAt": "2026-03-05T13:20:00Z"
-      }
-    ],
-    "pagination": {
-      "page": 1,
-      "limit": 20,
-      "total": 45,
-      "pages": 3
-    }
-  }
-}
-```
-
----
-
-### 2. Get Upcoming Classes
-**GET** `/student/upcoming-classes`
-
-**Headers:**
-```
-Authorization: Bearer <student_token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "upcomingClasses": [
-      {
-        "_id": "507f1f77bcf86cd799439037",
-        "title": "Physics Class - Electromagnetic Waves",
-        "description": "Live class on electromagnetic spectrum and properties",
-        "subject": "Physics",
-        "className": "Class 10",
-        "teacher": "Mrs. Sarah Johnson",
-        "scheduledFor": "2026-03-06T14:00:00Z",
-        "meetingLink": "https://meet.meet.google.com/abc-defg-hij"
-      }
-    ]
-  }
-}
-```
-
----
-
-## Attendance APIs
-
-### 1. Mark Attendance (Teacher)
-**POST** `/teacher/attendance`
-
-*Refer to Teacher Panel APIs section above*
-
----
-
-### 2. Get Class Attendance
-**GET** `/attendance/class/:id`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Query Parameters:**
-```
-startDate: 2026-02-01
-endDate: 2026-03-05
-section: A
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "classId": "507f1f77bcf86cd799439023",
-    "className": "Class 10",
-    "section": "A",
-    "records": [
-      {
-        "date": "2026-03-05",
-        "totalPresent": 38,
-        "totalAbsent": 1,
-        "totalLate": 1,
-        "details": [
-          {
-            "studentName": "Raj Kumar",
-            "rollNumber": "STU010",
-            "status": "present"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
----
-
-### 3. Get Student Attendance
-**GET** `/attendance/student/:id`
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "studentId": "507f1f77bcf86cd799439024",
-    "studentName": "Raj Kumar",
-    "className": "Class 10",
-    "section": "A",
-    "totalDaysPresent": 85,
-    "totalDaysAbsent": 5,
-    "totalDaysLate": 2,
-    "attendancePercentage": 92,
-    "records": [
-      {
-        "date": "2026-03-05",
-        "status": "present"
-      }
-    ]
-  }
-}
-```
-
----
-
-## Exam and Marks APIs
-
-### 1. Create Exam
-**POST** `/exams`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Request:**
-```json
-{
-  "examName": "Mid Term Physics",
-  "examType": "MID_TERM",
-  "classId": "507f1f77bcf86cd799439023",
-  "subjectId": "507f1f77bcf86cd799439026",
-  "totalMarks": 100,
-  "date": "2026-03-15",
-  "startTime": "09:00",
+  "title": "Live Class",
+  "description": "optional",
+  "domainId": "ObjectId",
+  "classId": "ObjectId",
+  "subjectId": "ObjectId",
+  "date": "2026-03-20",
+  "startTime": "10:00",
   "endTime": "11:00",
-  "instructions": "Attempt all questions. Calculators allowed."
+  "meetingLink": "https://..."
+}
+```
+Response 201: created OnlineClass document
+
+---
+
+## 5) Student Portal APIs
+Auth: student
+
+### GET /student/content
+Query: contentType, subjectId, search, page, limit
+Response 200: pagination with Content documents for student's class/domain
+
+### GET /student/upcoming-classes
+Query: page, limit
+Response 200: pagination with upcoming OnlineClass documents
+
+### GET /student/results
+Query: examId, page, limit
+Response 200: pagination with Result documents for logged-in student
+
+---
+
+## 6) Parent Portal APIs
+Auth: parent
+
+### GET /parent/student
+Query: studentId optional
+Response 200:
+```json
+{
+  "parent": { "_id": "ObjectId", "name": "string", "children": [] },
+  "student": { "_id": "ObjectId", "fullName": "string" },
+  "children": []
 }
 ```
 
-**Success Response (201):**
+### GET /parent/attendance
+Query: studentId optional, page, limit
+Response 200:
 ```json
 {
-  "success": true,
-  "message": "Exam created successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439033",
-    "examName": "Mid Term Physics",
-    "examType": "MID_TERM",
-    "class": "Class 10",
-    "subject": "Physics",
-    "totalMarks": 100,
-    "date": "2026-03-15",
-    "createdAt": "2026-03-05T14:00:00Z"
+  "data": [],
+  "total": 0,
+  "page": 1,
+  "limit": 20,
+  "summary": {
+    "present": 0,
+    "absent": 0,
+    "percentage": 0
+  }
+}
+```
+
+### GET /parent/results
+Query: studentId optional, examId optional, page, limit
+Response 200: pagination with Result documents
+
+### GET /parent/upcoming-classes
+Query: page, limit
+Response 200: pagination with OnlineClass documents for parent children
+
+### GET /parent/report-card
+Query: studentId optional, examId optional
+Response 200:
+```json
+{
+  "student": {},
+  "result": {},
+  "attendance": {
+    "total": 0,
+    "present": 0,
+    "percentage": 0
   }
 }
 ```
 
 ---
 
-### 2. Get All Exams
-**GET** `/exams`
+## 7) Domain APIs
 
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Query Parameters:**
-```
-classId: 507f1f77bcf86cd799439023
-examType: MID_TERM
-page: 1
-limit: 10
-```
-
-**Success Response (200):**
+### POST /domains
+Auth: admin
+Body:
 ```json
 {
-  "success": true,
-  "data": {
-    "exams": [
-      {
-        "_id": "507f1f77bcf86cd799439033",
-        "examName": "Mid Term Physics",
-        "examType": "MID_TERM",
-        "class": "Class 10",
-        "subject": "Physics",
-        "totalMarks": 100,
-        "date": "2026-03-15"
-      }
-    ],
-    "pagination": {
-      "page": 1,
-      "limit": 10,
-      "total": 24
-    }
-  }
+  "name": "Generic School",
+  "code": "GENERIC_SCHOOL",
+  "description": "optional"
 }
 ```
+Response 201: Domain document
+
+### GET /domains
+Auth: admin, teacher, student, parent
+Response 200: array of Domain documents
 
 ---
 
-### 3. Add Marks
-**POST** `/teacher/add-marks`
+## 8) Class APIs
 
-*Refer to Teacher Panel APIs section above*
-
----
-
-### 4. Get Student Marks
-**GET** `/marks/student/:id`
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Success Response (200):**
+### POST /classes
+Auth: admin
+Body:
 ```json
 {
-  "success": true,
-  "data": {
-    "studentId": "507f1f77bcf86cd799439024",
-    "studentName": "Raj Kumar",
-    "class": "Class 10",
-    "marks": [
-      {
-        "examName": "Unit Test 1",
-        "examType": "UNIT_TEST",
-        "subject": "Physics",
-        "marksObtained": 85,
-        "outOf": 100,
-        "percentage": 85,
-        "date": "2026-02-15"
-      },
-      {
-        "examName": "Mid Term Physics",
-        "examType": "MID_TERM",
-        "subject": "Physics",
-        "marksObtained": 92,
-        "outOf": 100,
-        "percentage": 92,
-        "date": "2026-03-15"
-      }
-    ]
-  }
-}
-```
-
----
-
-### 5. Get Exam Marks
-**GET** `/marks/exam/:id`
-
-**Headers:**
-```
-Authorization: Bearer <teacher_token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "examId": "507f1f77bcf86cd799439033",
-    "examName": "Mid Term Physics",
-    "totalStudents": 40,
-    "marksEntries": [
-      {
-        "studentId": "507f1f77bcf86cd799439024",
-        "studentName": "Raj Kumar",
-        "rollNumber": "STU010",
-        "marksObtained": 92,
-        "outOf": 100,
-        "percentage": 92,
-        "grade": "A"
-      }
-    ],
-    "classAverage": 78.5,
-    "highestMarks": 98,
-    "lowestMarks": 45
-  }
-}
-```
-
----
-
-## Student Results APIs
-
-### 1. Get Student Results
-**GET** `/student/results`
-
-**Headers:**
-```
-Authorization: Bearer <student_token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "studentId": "507f1f77bcf86cd799439024",
-    "studentName": "Raj Kumar",
-    "class": "Class 10",
-    "results": [
-      {
-        "_id": "507f1f77bcf86cd799439038",
-        "examName": "Mid Term",
-        "examType": "MID_TERM",
-        "subjectMarks": [
-          {
-            "subject": "Physics",
-            "marksObtained": 92,
-            "outOf": 100,
-            "percentage": 92,
-            "grade": "A"
-          },
-          {
-            "subject": "Chemistry",
-            "marksObtained": 88,
-            "outOf": 100,
-            "percentage": 88,
-            "grade": "A"
-          }
-        ],
-        "totalMarks": 180,
-        "totalOut": 200,
-        "percentage": 90,
-        "grade": "A",
-        "rank": 2,
-        "generatedAt": "2026-03-16T00:00:00Z"
-      }
-    ]
-  }
-}
-```
-
----
-
-### 2. Generate Report Card
-**POST** `/results/student/:id/generate`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Request:**
-```json
-{
-  "examType": "MID_TERM",
-  "classId": "507f1f77bcf86cd799439023"
-}
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "Report card generated successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439039",
-    "studentName": "Raj Kumar",
-    "class": "Class 10",
-    "examType": "MID_TERM",
-    "generatedAt": "2026-03-16T10:00:00Z",
-    "reportCardUrl": "https://cloudinary.com/..."
-  }
-}
-```
-
----
-
-### 3. Get Report Card
-**GET** `/results/student/:id/report-card`
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "studentId": "507f1f77bcf86cd799439024",
-    "studentName": "Raj Kumar",
-    "class": "Class 10",
-    "section": "A",
-    "rollNumber": "STU010",
-    "reportCard": {
-      "examName": "Mid Term",
-      "examDate": "2026-03-15",
-      "subjects": [
-        {
-          "subjectName": "Physics",
-          "marksObtained": 92,
-          "outOf": 100,
-          "percentage": 92,
-          "grade": "A"
-        },
-        {
-          "subjectName": "Chemistry",
-          "marksObtained": 88,
-          "outOf": 100,
-          "percentage": 88,
-          "grade": "A"
-        }
-      ],
-      "totalMarks": 180,
-      "totalOut": 200,
-      "overallPercentage": 90,
-      "overallGrade": "A",
-      "comments": "Excellent performance in this exam"
-    }
-  }
-}
-```
-
----
-
-## Parent Portal APIs
-
-### 1. Get Child Info
-**GET** `/parent/student`
-
-**Headers:**
-```
-Authorization: Bearer <parent_token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "parentId": "507f1f77bcf86cd799439025",
-    "parentName": "Mr. Ramesh Kumar",
-    "children": [
-      {
-        "_id": "507f1f77bcf86cd799439024",
-        "fullName": "Raj Kumar",
-        "class": "Class 10",
-        "section": "A",
-        "rollNumber": "STU010",
-        "currentGPA": 4.0,
-        "status": "active"
-      }
-    ]
-  }
-}
-```
-
----
-
-### 2. Get Child Attendance
-**GET** `/parent/attendance`
-
-**Headers:**
-```
-Authorization: Bearer <parent_token>
-```
-
-**Query Parameters:**
-```
-studentId: 507f1f77bcf86cd799439024
-month: 2026-03
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "studentName": "Raj Kumar",
-    "month": "March 2026",
-    "totalDays": 20,
-    "presentDays": 18,
-    "absentDays": 1,
-    "lateDays": 1,
-    "attendancePercentage": 90,
-    "attendanceRecords": [
-      {
-        "date": "2026-03-05",
-        "status": "present"
-      },
-      {
-        "date": "2026-03-06",
-        "status": "absent"
-      }
-    ]
-  }
-}
-```
-
----
-
-### 3. Get Child Results
-**GET** `/parent/results`
-
-**Headers:**
-```
-Authorization: Bearer <parent_token>
-```
-
-**Query Parameters:**
-```
-studentId: 507f1f77bcf86cd799439024
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "studentName": "Raj Kumar",
-    "results": [
-      {
-        "examName": "Unit Test 1",
-        "examType": "UNIT_TEST",
-        "totalMarks": 180,
-        "marksObtained": 170,
-        "percentage": 94.4,
-        "grade": "A+",
-        "date": "2026-02-15"
-      },
-      {
-        "examName": "Mid Term",
-        "examType": "MID_TERM",
-        "totalMarks": 200,
-        "marksObtained": 180,
-        "percentage": 90,
-        "grade": "A",
-        "date": "2026-03-15"
-      }
-    ]
-  }
-}
-```
-
----
-
-### 4. Get Upcoming Classes
-**GET** `/parent/upcoming-classes`
-
-**Headers:**
-```
-Authorization: Bearer <parent_token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "upcomingClasses": [
-      {
-        "_id": "507f1f77bcf86cd799439037",
-        "title": "Physics Class - Electromagnetic Waves",
-        "subject": "Physics",
-        "teacher": "Mrs. Sarah Johnson",
-        "className": "Class 10",
-        "scheduledFor": "2026-03-06T14:00:00Z",
-        "meetingLink": "https://meet.meet.google.com/abc-defg-hij"
-      }
-    ]
-  }
-}
-```
-
----
-
-### 5. Get Report Card
-**GET** `/parent/report-card`
-
-**Headers:**
-```
-Authorization: Bearer <parent_token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "studentName": "Raj Kumar",
-    "class": "Class 10",
-    "section": "A",
-    "reportCard": {
-      "examName": "Mid Term",
-      "subjects": [
-        {
-          "subject": "Physics",
-          "marksObtained": 92,
-          "percentage": 92,
-          "grade": "A"
-        },
-        {
-          "subject": "Chemistry",
-          "marksObtained": 88,
-          "percentage": 88,
-          "grade": "A"
-        }
-      ],
-      "totalPercentage": 90,
-      "overallGrade": "A"
-    }
-  }
-}
-```
-
----
-
-## Domain, Class & Subject APIs
-
-### 1. Create Domain
-**POST** `/domains`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Request:**
-```json
-{
-  "domainName": "Vedic Mathematics",
-  "description": "Ancient mathematical techniques for fast computation",
-  "image": "vedic_math.jpg"
-}
-```
-
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "message": "Domain created successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439040",
-    "domainName": "Vedic Mathematics",
-    "description": "Ancient mathematical techniques for fast computation"
-  }
-}
-```
-
----
-
-### 2. Get All Domains
-**GET** `/domains`
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "domains": [
-      {
-        "_id": "507f1f77bcf86cd799439017",
-        "domainName": "Generic School",
-        "description": "CBSE Curriculum",
-        "totalClasses": 12
-      },
-      {
-        "_id": "507f1f77bcf86cd799439040",
-        "domainName": "Vedic Mathematics",
-        "description": "Ancient mathematical techniques",
-        "totalClasses": 5
-      }
-    ]
-  }
-}
-```
-
----
-
-### 3. Create Class
-**POST** `/classes`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Request:**
-```json
-{
-  "className": "Class 10",
-  "sections": ["A", "B", "C"],
-  "domainId": "507f1f77bcf86cd799439017",
-  "capacity": 40
-}
-```
-
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "message": "Class created successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439023",
-    "className": "Class 10",
-    "sections": ["A", "B", "C"],
-    "domainId": "507f1f77bcf86cd799439017"
-  }
-}
-```
-
----
-
-### 4. Get All Classes
-**GET** `/classes`
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Query Parameters:**
-```
-domainId: 507f1f77bcf86cd799439017 (optional)
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "classes": [
-      {
-        "_id": "507f1f77bcf86cd799439023",
-        "className": "Class 10",
-        "sections": ["A", "B", "C"],
-        "domain": "Generic School",
-        "totalEnrolled": 115,
-        "capacity": 120
-      }
-    ]
-  }
-}
-```
-
----
-
-### 5. Assign Teacher to Class
-**POST** `/classes/:id/assign-teacher`
-
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
-
-**Request:**
-```json
-{
-  "teacherId": "507f1f77bcf86cd799439022",
-  "subjectId": "507f1f77bcf86cd799439026",
+  "domainId": "ObjectId",
+  "className": "Class 6",
+  "standardNumber": 6,
   "section": "A"
 }
 ```
+Response 201: Class document
 
-**Success Response (200):**
+### GET /classes
+Auth: admin, teacher, student, parent
+Query: domainId, className, section, page, limit
+Response 200: pagination with Class documents
+
+### POST /classes/:id/assign-teacher
+Auth: admin
+Body:
 ```json
 {
-  "success": true,
-  "message": "Teacher assigned successfully",
-  "data": {
-    "classId": "507f1f77bcf86cd799439023",
-    "teacherId": "507f1f77bcf86cd799439022",
-    "teacherName": "Mrs. Sarah Johnson",
-    "subject": "Physics",
-    "section": "A",
-    "assignedAt": "2026-03-05T14:30:00Z"
+  "teacherId": "ObjectId"
+}
+```
+Response 200: updated Class document with homeroomTeacherId
+
+---
+
+## 9) Subject APIs
+
+### POST /subjects
+Auth: admin
+Body:
+```json
+{
+  "domainId": "ObjectId",
+  "classId": "ObjectId",
+  "name": "Math",
+  "code": "MATH"
+}
+```
+Response 201: Subject document
+
+### GET /subjects
+Auth: admin, teacher, student, parent
+Query: domainId, classId, name, page, limit
+Response 200: pagination with Subject documents
+
+### POST /subjects/:id/assign-teacher
+Auth: admin
+Body:
+```json
+{
+  "teacherId": "ObjectId"
+}
+```
+Response 200: updated Subject document
+
+---
+
+## 10) Teacher Management APIs
+
+### POST /teachers
+Auth: admin
+Body:
+```json
+{
+  "name": "Teacher Name",
+  "email": "teacher@example.com",
+  "phone": "9999999999",
+  "domainIds": ["ObjectId"],
+  "subjectIds": ["ObjectId"],
+  "assignedClassIds": ["ObjectId"],
+  "experience": 3,
+  "qualification": "MSc",
+  "password": "optional"
+}
+```
+Response 201:
+```json
+{
+  "teacher": {},
+  "credentials": {
+    "teacherId": "TCHxxxxxx",
+    "email": "teacher@example.com",
+    "password": "generatedOrGiven"
+  }
+}
+```
+
+### GET /teachers
+Auth: admin, teacher
+Query: search, domainId, page, limit
+Response 200: pagination with teacher list
+
+### GET /teachers/me/classes
+Auth: teacher
+Response 200: class array
+
+### GET /teachers/me/classes/:classId/students
+Auth: teacher
+Query: search, page, limit
+Response 200: pagination with students
+
+### GET /teachers/:id
+Auth: admin, teacher
+Response 200: teacher detail with populated domain/subject/class references
+
+### PUT /teachers/:id
+Auth: admin
+Body (all optional):
+```json
+{
+  "name": "Teacher Updated",
+  "email": "updated.teacher@example.com",
+  "phone": "9999999998",
+  "domainIds": ["ObjectId"],
+  "subjectIds": ["ObjectId"],
+  "assignedClassIds": ["ObjectId"],
+  "experience": 5,
+  "qualification": "M.Ed",
+  "isActive": true
+}
+```
+Response 200: updated Teacher document
+
+### DELETE /teachers/:id
+Auth: admin
+Response 200:
+```json
+{
+  "message": "Teacher deleted successfully"
+}
+```
+
+---
+
+## 11) Student Management APIs
+
+### POST /students
+Auth: admin
+Body:
+```json
+{
+  "fullName": "Student Name",
+  "dateOfBirth": "2014-06-01",
+  "gender": "male",
+  "domainId": "ObjectId",
+  "classId": "ObjectId",
+  "className": "Class 6",
+  "section": "A",
+  "rollNumber": "12",
+  "parentName": "Parent",
+  "parentPhone": "9999999999",
+  "parentEmail": "optional",
+  "address": "optional",
+  "admissionDate": "optional",
+  "previousSchool": "optional",
+  "previousMarks": [],
+  "documents": [],
+  "profilePhoto": "optional url",
+  "profilePhotoBase64": "optional",
+  "documentUploads": []
+}
+```
+Response 201:
+```json
+{
+  "student": {},
+  "studentCredentials": {
+    "studentId": "STUxxxxxx",
+    "rollNumber": "12",
+    "username": "stu12",
+    "password": "generated"
+  },
+  "parentCredentials": {
+    "phone": "9999999999",
+    "password": "generated"
+  }
+}
+```
+
+### GET /students
+Auth: admin, teacher, parent, student
+Query: domainId, classId, section, search, page, limit
+Response 200: pagination with student list
+
+### GET /students/:id
+Auth: admin, teacher, parent, student
+Response 200: one student document
+
+### PUT /students/:id
+Auth: admin, teacher
+Body: updateStudentSchema fields
+Note: teacher can update only improvementNotes; admin can update full allowed profile fields.
+Response 200: updated student document
+
+### DELETE /students/:id
+Auth: admin
+Response 200:
+```json
+{
+  "message": "Student deleted successfully"
+}
+```
+
+### GET /students/:id/progress
+Auth: admin, teacher, parent, student
+Response 200:
+```json
+{
+  "student": {},
+  "dashboard": {
+    "attendance": { "total": 0, "present": 0, "percentage": 0 },
+    "marks": [],
+    "results": [],
+    "assignments": [],
+    "improvementNotes": ""
   }
 }
 ```
 
 ---
 
-### 6. Create Subject
-**POST** `/subjects`
+## 12) Attendance APIs
 
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
+### POST /attendance
+Auth: admin, teacher
+Body: same as teacher attendance body
+Response 201: count + attendance records
 
-**Request:**
-```json
-{
-  "subjectName": "Physics",
-  "subjectCode": "PHY101",
-  "description": "Physics for CBSE board",
-  "domainId": "507f1f77bcf86cd799439017",
-  "classIds": ["507f1f77bcf86cd799439023"]
-}
-```
+### GET /attendance/class/:id
+Auth: admin, teacher
+Query: date optional, page, limit
+Response 200: pagination with class attendance records
 
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "message": "Subject created successfully",
-  "data": {
-    "_id": "507f1f77bcf86cd799439026",
-    "subjectName": "Physics",
-    "subjectCode": "PHY101",
-    "domain": "Generic School",
-    "classes": ["Class 10"]
-  }
-}
-```
+### GET /attendance/student/:id
+Auth: admin, teacher, parent, student
+Query: from, to, page, limit
+Response 200: pagination + summary (present/absent/percentage)
 
 ---
 
-### 7. Get All Subjects
-**GET** `/subjects`
+## 13) Exam APIs
 
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Query Parameters:**
-```
-classId: 507f1f77bcf86cd799439023 (optional)
-domainId: 507f1f77bcf86cd799439017 (optional)
-```
-
-**Success Response (200):**
+### POST /exams
+Auth: admin, teacher
+Body:
 ```json
 {
-  "success": true,
-  "data": {
-    "subjects": [
-      {
-        "_id": "507f1f77bcf86cd799439026",
-        "subjectName": "Physics",
-        "subjectCode": "PHY101",
-        "domain": "Generic School"
-      }
-    ]
-  }
+  "name": "Mid Term",
+  "examType": "MID_TERM",
+  "domainId": "ObjectId",
+  "classId": "ObjectId",
+  "section": "A",
+  "examDate": "2026-03-25"
 }
 ```
+Response 201: Exam document
+
+### GET /exams
+Auth: admin, teacher, parent, student
+Query: domainId, classId, examType, page, limit
+Response 200: pagination with exam list
 
 ---
 
-### 8. Assign Teacher to Subject
-**POST** `/subjects/:id/assign-teacher`
+## 14) Mark APIs
 
-**Headers:**
-```
-Authorization: Bearer <admin_token>
-```
+### POST /marks
+Auth: admin, teacher
+Body: createMarkSchema
+Response 201: Mark document with examId/subjectId/studentId populated
 
-**Request:**
+### GET /marks/student/:id
+Auth: admin, teacher, parent, student
+Query: examId optional, page, limit
+Response 200: pagination with marks
+
+### GET /marks/exam/:id
+Auth: admin, teacher
+Query: page, limit
+Response 200: pagination with marks of exam
+
+---
+
+## 15) Result APIs
+
+### POST /results/student/:id/generate
+Auth: admin, teacher
+Body or query must include examId
+
+Body example:
 ```json
 {
-  "teacherId": "507f1f77bcf86cd799439022",
-  "classId": "507f1f77bcf86cd799439023"
+  "examId": "ObjectId"
 }
 ```
+Response 201: generated Result document
 
-**Success Response (200):**
+### GET /results/student/:id
+Auth: admin, teacher, parent, student
+Query: examId optional, page, limit
+Response 200: pagination with result list
+
+### GET /results/student/:id/report-card
+Auth: admin, teacher, parent, student
+Query: examId optional
+Response 200:
 ```json
 {
-  "success": true,
-  "message": "Teacher assigned to subject successfully",
-  "data": {
-    "subjectId": "507f1f77bcf86cd799439026",
-    "teacherId": "507f1f77bcf86cd799439022",
-    "classId": "507f1f77bcf86cd799439023",
-    "assignedAt": "2026-03-05T14:35:00Z"
-  }
+  "student": {},
+  "result": {},
+  "attendance": { "total": 0, "present": 0, "percentage": 0 }
 }
 ```
 
 ---
 
-## Notification and Reminder System
+## 16) Assignment APIs
 
-### Reminder Triggers
-The system uses **node-cron** background jobs that run every minute:
-- **30 minutes before class**: Send notification reminder
-- **10 minutes before class**: Send urgent notification reminder
+### POST /assignments
+Auth: admin, teacher
+Body: createAssignmentSchema
+Response 201: Assignment document
 
-### Delivery Channels
-- Push notifications
-- Email notifications
+### GET /assignments/class/:id
+Auth: admin, teacher
+Query: page, limit
+Response 200: pagination with assignments by class
 
-### Notification Storage
-All notifications are stored in the `notifications` collection with timestamps and delivery status.
-
----
-
-## Database Models Implemented
-- User
-- Student
-- Teacher
-- Parent
-- TeacherApplication
-- Domain
-- Class
-- Subject
-- Attendance
-- Exam
-- Marks
-- Result
-- Content
-- Assignment
-- OnlineClass
-- Notification
-- RefreshToken
-- Book
-- Enquiry
-- Event
-- Fee
-- Homework
-- Issue
-- Like
-- Post
-- OTP
+### GET /assignments/student/:id
+Auth: admin, teacher, parent, student
+Query: page, limit
+Response 200: pagination with assignments for student class
 
 ---
 
-## Production Features Included
-- ✅ **Pagination, Filtering & Search**: All list endpoints support pagination with customizable page and limit
-- ✅ **File Upload**: Cloudinary integration for document, photo, and media uploads
-- ✅ **Request Validation**: Joi schema validation on all inputs
-- ✅ **Security**: Rate limiting and Helmet.js for HTTP headers
-- ✅ **Centralized Error Handling**: Consistent error responses across all endpoints
-- ✅ **Logging**: Request/response logging for debugging
-- ✅ **JWT Authentication**: Secure token-based authentication with refresh mechanism
-- ✅ **RBAC Authorization**: Role-based access control (Admin, Teacher, Student, Parent)
-- ✅ **Cron Jobs**: Automated reminder notifications
-- ✅ **Response Standardization**: All endpoints return consistent JSON structure
+## 17) Admin APIs
+Auth: admin only
 
----
-
-## Standard Response Format
-
-### Success Response
+### GET /admin/analytics
+Response 200:
 ```json
 {
-  "success": true,
-  "message": "Operation successful",
-  "data": {
-    // Response data
-  }
-}
-```
-
-### Error Response
-```json
-{
-  "success": false,
-  "message": "Error description",
-  "error": {
-    "code": "ERROR_CODE",
-    "details": {}
-  }
-}
-```
-
----
-
-## Common HTTP Status Codes
-
-| Code | Description |
-|------|-------------|
-| 200 | OK - Request successful |
-| 201 | Created - Resource created successfully |
-| 400 | Bad Request - Validation failed |
-| 401 | Unauthorized - Authentication required |
-| 403 | Forbidden - Insufficient permissions |
-| 404 | Not Found - Resource not found |
-| 409 | Conflict - Resource already exists |
-| 422 | Unprocessable Entity - Validation error |
-| 500 | Internal Server Error - Server error |
-
----
-
-## API Testing Assets
-
-### Postman Collection
-- **Location**: `docs/School_ERP.postman_collection.json`
-- **Features**: Pre-configured requests for all endpoints with sample data
-- **Import**: Import this file into Postman to test all APIs directly
-
-### Seed Test Data
-**Command**: `npm run seed`
-
-**Seeded Data Includes**:
-- 1 Admin account
-- 5 Teachers (assigned to various classes)
-- 50 Students (distributed across classes)
-- 10+ Classes (Generic school + domain-specific)
-- 15+ Subjects
-- Sample assignments, announcements, and content
-
----
-
-## Swagger Documentation
-
-### Access Swagger UI
-- **URL**: `http://localhost:PORT/api-docs` (or `/docs`)
-- **JSON Schema**: `http://localhost:PORT/api-docs.json` (or `/docs.json`)
-
-### Features
-- Interactive API testing
-- Request/response schemas
-- Authentication setup
-- Real-time API exploration
-
----
-
-## Authentication Headers
-
-All protected endpoints require the `Authorization` header:
-
-```
-Authorization: Bearer <accessToken>
-```
-
-**Example**:
-```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE2ODc1MzAyMDAsImV4cCI6MTY4NzUzMzgwMH0.7zKq...
-```
-
----
-
-## File Upload & Media Handling
-
-### Supported Upload Methods
-
-#### 1. **Base64 String (JSON)**
-Encode file as base64 and send in JSON payload.
-
-**Pros:**
-- Single JSON request
-- No multipart complexity
-- Works with CORS easily
-
-**Cons:**
-- ~33% larger payload size
-- Not ideal for large files (>5MB)
-
-**Example:** 
-```json
-{
-  "profilePhotoBase64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBg..."
-}
-```
-
-#### 2. **Multipart/Form-Data (File Upload)**
-Traditional file upload using form-data.
-
-**Pros:**
-- Supports large files (up to 50MB)
-- Efficient transfer
-- Browser native
-
-**Cons:**
-- Requires multipart handling
-- More complex implementation
-
-**Example with cURL:**
-```bash
-curl -X POST http://localhost:4000/students \
-  -H "Authorization: Bearer <token>" \
-  -F "fullName=Raj Kumar" \
-  -F "dateOfBirth=2012-05-15" \
-  -F "gender=male" \
-  -F "domainId=507f1f77bcf86cd799439017" \
-  -F "classId=507f1f77bcf86cd799439023" \
-  -F "className=Class 10" \
-  -F "section=A" \
-  -F "rollNumber=STU010" \
-  -F "parentName=Mr. Ramesh Kumar" \
-  -F "parentPhone=+919876543212" \
-  -F "profilePhoto=@/path/to/photo.jpg"
-```
-
-**Example with JavaScript/Axios:**
-```javascript
-const formData = new FormData();
-formData.append('fullName', 'Raj Kumar');
-formData.append('dateOfBirth', '2012-05-15');
-formData.append('gender', 'male');
-formData.append('domainId', '507f1f77bcf86cd799439017');
-formData.append('classId', '507f1f77bcf86cd799439023');
-formData.append('className', 'Class 10');
-formData.append('section', 'A');
-formData.append('rollNumber', 'STU010');
-formData.append('parentName', 'Mr. Ramesh Kumar');
-formData.append('parentPhone', '+919876543212');
-formData.append('profilePhoto', fileInput.files[0]); // File object
-
-axios.post('/students', formData, {
-  headers: {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'multipart/form-data'
-  }
-});
-```
-
-### Supported File Types
-
-| File Type | Max Size | Accepted Extensions | Purpose |
-|-----------|----------|-------------------|---------|
-| Images | 5 MB | JPG, PNG, GIF, WEBP | Profile photos, documents |
-| PDF | 10 MB | PDF | Certificates, documents |
-| Documents | 5 MB | DOC, DOCX, XLS, XLSX | Educational records |
-| Videos | 50 MB | MP4, MOV, AVI | Content, lectures |
-
-### Photo Upload Fields by Endpoint
-
-**Student Creation (`POST /students`):**
-- `profilePhoto` - Direct file upload
-- `profilePhotoBase64` - Base64 encoded string
-
-**Student Update (`PUT /students/:id`):**
-- `profilePhoto` - Update student's profile photo
-
-**Content Publishing (`POST /teacher/publish-content`):**
-- `file` - Course materials (PDF, images, documents)
-
-**Teacher Application (`POST /teacher/apply`):**
-- `profilePhoto` - Applicant's photo
-- `resume` - Resume/CV file
-
-### Cloudinary Storage Structure
-
-All files are organized in Cloudinary as follows:
-
-```
-school-erp/
-├── students/
-│   ├── profile/           # Student profile photos
-│   └── documents/         # Student documents
-├── teachers/
-│   ├── profile/           # Teacher profile photos
-│   └── applications/      # Application documents
-├── content/
-│   ├── notes/
-│   ├── pdfs/
-│   └── videos/
-└── general/
-    └── documents/
-```
-
-### PHP/Java/Backend Implementation Example
-
-When receiving uploaded files, the backend:
-
-1. **Validates** file type and size
-2. **Uploads** to Cloudinary with organized folder structure
-3. **Stores** URL in database for retrieval
-4. **Returns** file URL in the response
-
-**Response Example:**
-```json
-{
-  "success": true,
-  "data": {
-    "profilePhoto": "https://res.cloudinary.com/school-erp/image/upload/v1646467200/school-erp/students/profile/stu010_abc123.jpg",
-    "documentUrl": "https://res.cloudinary.com/school-erp/raw/upload/v1646467201/school-erp/students/documents/birth_cert_xyz789.pdf"
-  }
-}
-```
-
----
-
-## Student Data Collection Form
-
-When creating a student through the admin panel, ensure the following information is collected:
-
-### Personal Information
-- [ ] Full Name (as per official documents)
-- [ ] Date of Birth (YYYY-MM-DD format)
-- [ ] Gender
-- [ ] Profile Photo (JPG/PNG)
-
-### Academic Information
-- [ ] Domain (Vedic Math / Abacus / Generic School)
-- [ ] Class/Grade Level
-- [ ] Section (A, B, C, etc.)
-- [ ] Roll Number (unique per section)
-- [ ] Previous School Name
-- [ ] Previous Marks/Percentage (with exam names and years)
-
-### Parent/Guardian Information
-- [ ] Full Name
-- [ ] Phone Number (primary contact)
-- [ ] Email Address (optional)
-- [ ] Residential Address
-
-### Documents
-- [ ] Birth Certificate (optional)
-- [ ] Transfer Certificate (optional)
-- [ ] Previous School Records (optional)
-- [ ] Address Proof (optional)
-
----
-
-
-
-Create a `.env` file in the root directory with these variables:
-
-```env
-# Server
-PORT=5000
-NODE_ENV=development
-
-# Database
-MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/school_erp
-
-# JWT
-JWT_SECRET=your_secret_key_here
-JWT_REFRESH_SECRET=your_refresh_secret_here
-JWT_EXPIRE=1h
-JWT_REFRESH_EXPIRE=7d
-
-# Email
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
-
-# Cloudinary
-CLOUDINARY_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# Frontend URL
-FRONTEND_URL=http://localhost:3000
-```
-
----
-
-## Installation & Setup
-
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
-
-2. **Setup Environment Variables**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
-
-3. **Seed Database**
-   ```bash
-   npm run seed
-   ```
-
-4. **Start Development Server**
-   ```bash
-   npm run dev
-   ```
-
-5. **Access APIs**
-   - Base URL: `http://localhost:5000`
-   - Swagger Docs: `http://localhost:5000/api-docs`
-
----
-
-## Rate Limiting
-
-API requests are rate-limited to prevent abuse:
-- **Default Limit**: 100 requests per 15 minutes per IP
-- **Admin Endpoints**: 500 requests per 15 minutes
-- **File Upload**: 50 MB maximum file size
-
----
-
-## Error Handling
-
-All errors follow a consistent format:
-
-```json
-{
-  "success": false,
-  "message": "Validation failed",
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "details": {
-      "field": "email",
-      "message": "Invalid email format"
+  "totals": {
+    "students": 0,
+    "teachers": 0,
+    "parents": 0,
+    "domains": 0,
+    "classes": 0,
+    "subjects": 0,
+    "attendance": 0,
+    "exams": 0,
+    "marks": 0,
+    "results": 0
+  },
+  "studentsByDomain": [
+    {
+      "domain": "string",
+      "code": "GENERIC_SCHOOL",
+      "count": 0
     }
+  ]
+}
+```
+
+### GET /admin/dashboard
+Response 200:
+```json
+{
+  "totalStudents": 0,
+  "totalTeachers": 0,
+  "totalClasses": 0,
+  "attendanceToday": 0,
+  "upcomingClasses": [],
+  "recentActivities": []
+}
+```
+
+### POST /admin/create-teacher
+Body: createTeacherSchema
+Response 201: same as POST /teachers
+
+### POST /admin/create-student
+Body: createStudentSchema
+Response 201: same as POST /students
+
+### POST /admin/create-class
+Body: createClassSchema
+Response 201: same as POST /classes
+
+### POST /admin/create-subject
+Body: createSubjectSchema
+Response 201: same as POST /subjects
+
+### POST /admin/assign-teacher
+Body:
+```json
+{
+  "teacherId": "ObjectId",
+  "classId": "optional ObjectId",
+  "subjectId": "optional ObjectId"
+}
+```
+At least one of classId or subjectId is required.
+
+Response 200:
+```json
+{
+  "classAssignment": {},
+  "subjectAssignment": {}
+}
+```
+
+### GET /admin/teacher-applications
+Query: status, search, page, limit
+Response 200: pagination with TeacherApplication rows
+
+### GET /admin/student-applications
+Query: status, domainId, classId, search, page, limit
+Response 200: pagination with StudentAdmission rows
+
+### POST /admin/approve-teacher/:id
+Response 200:
+```json
+{
+  "application": {},
+  "teacher": {},
+  "credentials": {
+    "teacherId": "TCHxxxxxx",
+    "email": "teacher@example.com",
+    "password": "generated"
   }
 }
 ```
 
+### POST /admin/approve-student/:id
+Body:
+```json
+{
+  "classId": "ObjectId",
+  "rollNumber": "string",
+  "domainId": "optional ObjectId",
+  "admissionDate": "optional",
+  "remark": "optional"
+}
+```
+Response 200:
+```json
+{
+  "application": {},
+  "student": {},
+  "studentCredentials": {
+    "studentId": "STUxxxxxx",
+    "rollNumber": "string",
+    "username": "string",
+    "password": "generated"
+  },
+  "parentCredentials": {
+    "phone": "string",
+    "password": "generated"
+  }
+}
+```
+
+### POST /admin/reject-teacher/:id
+Body:
+```json
+{
+  "remark": "optional"
+}
+```
+Response 200: updated TeacherApplication
+
+### POST /admin/reject-student/:id
+Body:
+```json
+{
+  "remark": "optional"
+}
+```
+Response 200: updated StudentAdmission
+
+### GET /admin/export/students
+Response 200:
+- Content-Type: application/vnd.ms-excel
+- File download: students_sheet.csv
+
+### GET /admin/export/report-card/:studentId
+Response 200:
+- Content-Type: application/pdf
+- File download: report_card.pdf
+
 ---
 
-## Support & Documentation
-
-- **API Documentation**: See Swagger UI at `/api-docs`
-- **Postman Collection**: Import from `docs/School_ERP.postman_collection.json`
-- **Code Documentation**: See `src/docs/README.md` for detailed controller and service documentation
-- **Issue Reporting**: Submit issues to the project repository
-
----
-
-*Last Updated: March 5, 2026*
+## Active Endpoint Count
+- 80 active endpoints
+- Exact route index available in ALL_APIS_ROUTES.md

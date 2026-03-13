@@ -20,6 +20,7 @@ router.put(
   validate(updateStudentSchema),
   controller.updateStudent
 );
+router.delete('/:id', allowRoles('admin'), controller.deleteStudent);
 
 module.exports = router;
 

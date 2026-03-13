@@ -12,6 +12,19 @@ const createTeacherSchema = Joi.object({
   password: Joi.string().min(6)
 });
 
+const updateTeacherSchema = Joi.object({
+  name: Joi.string().trim(),
+  email: Joi.string().email(),
+  phone: Joi.string().min(8).max(20),
+  domainIds: Joi.array().items(objectId),
+  subjectIds: Joi.array().items(objectId),
+  assignedClassIds: Joi.array().items(objectId),
+  experience: Joi.number().min(0),
+  qualification: Joi.string().allow('', null),
+  isActive: Joi.boolean()
+});
+
 module.exports = {
-  createTeacherSchema
+  createTeacherSchema,
+  updateTeacherSchema
 };

@@ -1,2 +1,5 @@
 .env
 node_modules/
+ALL_APIS.md/
+ALL_APIS_ROUTES.md/
+API_TEST_COMPLETE.md/

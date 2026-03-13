@@ -26,10 +26,16 @@ const progress = asyncHandler(async (req, res) => {
   res.json(data);
 });
 
+const deleteStudent = asyncHandler(async (req, res) => {
+  const data = await studentService.deleteStudent(req.params.id, req.user);
+  res.json(data);
+});
+
 module.exports = {
   createStudent,
   listStudents,
   getStudent,
   updateStudent,
-  progress
+  progress,
+  deleteStudent
 };

@@ -1,154 +1,647 @@
 {
   "info": {
-    "name": "School ERP API - Full",
-    "description": "Production-ready School ERP API collection",
+    "name": "School ERP API - Complete",
+    "description": "Auto-generated complete Postman collection from ALL_APIS_ROUTES.md. Contains all active endpoints with placeholders.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
+      "name": "System",
+      "item": [
+        {
+          "name": "GET ",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": []
+            }
+          }
+        },
+        {
+          "name": "GET health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET docs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "docs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET docs.json",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docs.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "docs.json"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Auth",
       "item": [
         {
-          "name": "Admin Login",
+          "name": "POST auth admin login",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/auth/admin/login", "host": ["{{baseUrl}}"], "path": ["auth", "admin", "login"] },
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/admin/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "admin",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 2xx\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });",
+                  "let data = {};",
+                  "try { data = pm.response.json(); } catch (e) {}",
+                  "const token = data.accessToken || data?.data?.accessToken || data?.tokens?.accessToken;",
+                  "if (token) { pm.collectionVariables.set(\"adminToken\", token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST auth teacher login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/teacher/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "teacher",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{teacherIdentifier}}\",\n  \"password\": \"{{teacherPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 2xx\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });",
+                  "let data = {};",
+                  "try { data = pm.response.json(); } catch (e) {}",
+                  "const token = data.accessToken || data?.data?.accessToken || data?.tokens?.accessToken;",
+                  "if (token) { pm.collectionVariables.set(\"teacherToken\", token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST auth student login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/student/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "student",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{studentIdentifier}}\",\n  \"password\": \"{{studentPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 2xx\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });",
+                  "let data = {};",
+                  "try { data = pm.response.json(); } catch (e) {}",
+                  "const token = data.accessToken || data?.data?.accessToken || data?.tokens?.accessToken;",
+                  "if (token) { pm.collectionVariables.set(\"studentToken\", token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST auth parent request-otp",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/parent/request-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "parent",
+                "request-otp"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{parentPhone}}\"\n}"
+            }
           }
         },
         {
-          "name": "Teacher Login",
+          "name": "POST auth parent login",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/auth/teacher/login", "host": ["{{baseUrl}}"], "path": ["auth", "teacher", "login"] },
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"teacher2@schoolerp.com\",\n  \"password\": \"Teacher@123\"\n}" }
-          }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/parent/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "parent",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{parentEmail}}\",\n  \"password\": \"{{parentPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 2xx\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });",
+                  "let data = {};",
+                  "try { data = pm.response.json(); } catch (e) {}",
+                  "const token = data.accessToken || data?.data?.accessToken || data?.tokens?.accessToken;",
+                  "if (token) { pm.collectionVariables.set(\"parentToken\", token); }"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "Parent Login by Email",
+          "name": "POST auth refresh",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/auth/parent/login", "host": ["{{baseUrl}}"], "path": ["auth", "parent", "login"] },
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"parent2@example.com\",\n  \"password\": \"{{parentPassword}}\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 2xx\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });",
+                  "let data = {};",
+                  "try { data = pm.response.json(); } catch (e) {}",
+                  "const token = data.accessToken || data?.data?.accessToken || data?.tokens?.accessToken;",
+                  "if (token) { pm.collectionVariables.set(\"accessToken\", token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET auth me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
           }
         }
       ]
     },
     {
-      "name": "Teacher Application",
+      "name": "Admission And Applications",
       "item": [
         {
-          "name": "Apply Teacher",
+          "name": "POST admission apply",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/teacher/apply", "host": ["{{baseUrl}}"], "path": ["teacher", "apply"] },
-            "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Applicant Teacher\",\n  \"email\": \"applicant@example.com\",\n  \"phone\": \"9000012345\",\n  \"qualification\": \"M.Ed\",\n  \"experience\": 5,\n  \"subjects\": [\"Math\",\"Science\"]\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admission/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admission",
+                "apply"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentFullName\": \"{{studentFullName}}\",\n  \"dateOfBirth\": \"{{studentDateOfBirth}}\",\n  \"gender\": \"{{studentGender}}\",\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"parentName\": \"{{parentName}}\",\n  \"parentPhone\": \"{{parentPhone}}\",\n  \"parentEmail\": \"{{parentEmail}}\"\n}"
+            }
           }
         },
         {
-          "name": "List Teacher Applications",
+          "name": "POST teacher apply",
           "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
-            "url": { "raw": "{{baseUrl}}/admin/teacher-applications?status=pending", "host": ["{{baseUrl}}"], "path": ["admin", "teacher-applications"], "query": [{ "key": "status", "value": "pending" }] }
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teacher/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teacher",
+                "apply"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"{{teacherFullName}}\",\n  \"email\": \"{{teacherEmail}}\",\n  \"phone\": \"{{teacherPhone}}\",\n  \"qualification\": \"{{teacherQualification}}\",\n  \"experience\": \"{{teacherExperience}}\",\n  \"subjects\": [\n    \"{{subjectName1}}\",\n    \"{{subjectName2}}\"\n  ],\n  \"resumeBase64\": \"{{resumeBase64}}\",\n  \"documentUploads\": [\n    {\n      \"name\": \"{{supportingDocumentName}}\",\n      \"base64\": \"{{supportingDocumentBase64}}\"\n    }\n  ]\n}"
+            }
           }
         }
       ]
     },
     {
-      "name": "Admin Panel",
+      "name": "Teacher Portal",
       "item": [
         {
-          "name": "Dashboard",
+          "name": "GET teacher classes",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
-            "url": { "raw": "{{baseUrl}}/admin/dashboard", "host": ["{{baseUrl}}"], "path": ["admin", "dashboard"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacherToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teacher/classes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teacher",
+                "classes"
+              ]
+            }
           }
         },
         {
-          "name": "Create Teacher",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "url": { "raw": "{{baseUrl}}/admin/create-teacher", "host": ["{{baseUrl}}"], "path": ["admin", "create-teacher"] },
-            "body": { "mode": "raw", "raw": "{\n  \"name\": \"New Teacher\",\n  \"email\": \"newteacher@example.com\",\n  \"phone\": \"9000099999\",\n  \"domainIds\": [],\n  \"subjectIds\": [],\n  \"assignedClassIds\": [],\n  \"experience\": 3,\n  \"qualification\": \"B.Ed\"\n}" }
-          }
-        },
-        {
-          "name": "Create Student",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "url": { "raw": "{{baseUrl}}/admin/create-student", "host": ["{{baseUrl}}"], "path": ["admin", "create-student"] },
-            "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Student Demo\",\n  \"dateOfBirth\": \"2016-02-10\",\n  \"gender\": \"male\",\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"className\": \"Class 3\",\n  \"section\": \"A\",\n  \"rollNumber\": \"R12345\",\n  \"parentName\": \"Parent Demo\",\n  \"parentPhone\": \"9000088888\",\n  \"parentEmail\": \"parentdemo@example.com\",\n  \"address\": \"Delhi\",\n  \"admissionDate\": \"2025-04-01\",\n  \"previousSchool\": \"ABC School\",\n  \"previousMarks\": [],\n  \"documents\": []\n}" }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Teacher Panel",
-      "item": [
-        {
-          "name": "Get Classes",
+          "name": "GET teacher students",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{teacherToken}}" }],
-            "url": { "raw": "{{baseUrl}}/teacher/classes", "host": ["{{baseUrl}}"], "path": ["teacher", "classes"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacherToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teacher/students",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teacher",
+                "students"
+              ]
+            }
           }
         },
         {
-          "name": "Get Students",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{teacherToken}}" }],
-            "url": { "raw": "{{baseUrl}}/teacher/students", "host": ["{{baseUrl}}"], "path": ["teacher", "students"] }
-          }
-        },
-        {
-          "name": "Mark Attendance",
+          "name": "POST teacher attendance",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacherToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
-            "url": { "raw": "{{baseUrl}}/teacher/attendance", "host": ["{{baseUrl}}"], "path": ["teacher", "attendance"] },
-            "body": { "mode": "raw", "raw": "{\n  \"date\": \"2026-03-10\",\n  \"classId\": \"{{classId}}\",\n  \"records\": [\n    {\n      \"studentId\": \"{{studentId}}\",\n      \"status\": \"present\"\n    }\n  ]\n}" }
+            "url": {
+              "raw": "{{baseUrl}}/teacher/attendance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teacher",
+                "attendance"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"{{todayDate}}\",\n  \"classId\": \"{{classId}}\",\n  \"records\": [\n    {\n      \"studentId\": \"{{studentId}}\",\n      \"status\": \"present\"\n    }\n  ]\n}"
+            }
           }
         },
         {
-          "name": "Publish Content",
+          "name": "POST teacher marks",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacherToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
-            "url": { "raw": "{{baseUrl}}/teacher/publish-content", "host": ["{{baseUrl}}"], "path": ["teacher", "publish-content"] },
-            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Fractions Notes\",\n  \"description\": \"Notes\",\n  \"contentType\": \"notes\",\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"subjectId\": \"{{subjectId}}\"\n}" }
+            "url": {
+              "raw": "{{baseUrl}}/teacher/marks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teacher",
+                "marks"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"examId\": \"{{examId}}\",\n  \"studentId\": \"{{studentId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"obtainedMarks\": 80,\n  \"totalMarks\": 100\n}"
+            }
           }
         },
         {
-          "name": "Schedule Class",
+          "name": "POST teacher add-marks",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacherToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
-            "url": { "raw": "{{baseUrl}}/teacher/schedule-class", "host": ["{{baseUrl}}"], "path": ["teacher", "schedule-class"] },
-            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Live Class\",\n  \"description\": \"Weekly session\",\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"date\": \"2026-03-15\",\n  \"startTime\": \"10:30\",\n  \"endTime\": \"11:15\",\n  \"meetingLink\": \"https://meet.google.com/test-link\"\n}" }
+            "url": {
+              "raw": "{{baseUrl}}/teacher/add-marks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teacher",
+                "add-marks"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"examId\": \"{{examId}}\",\n  \"studentId\": \"{{studentId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"obtainedMarks\": 80,\n  \"totalMarks\": 100\n}"
+            }
+          }
+        },
+        {
+          "name": "POST teacher assignment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacherToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teacher/assignment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teacher",
+                "assignment"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{assignmentTitle}}\",\n  \"description\": \"{{assignmentDescription}}\",\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"dueDate\": \"{{futureDate}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST teacher announcement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacherToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teacher/announcement",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teacher",
+                "announcement"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{announcementTitle}}\",\n  \"description\": \"{{announcementDescription}}\",\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"subjectId\": \"{{subjectId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST teacher publish-content",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacherToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teacher/publish-content",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teacher",
+                "publish-content"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{contentTitle}}\",\n  \"description\": \"{{contentDescription}}\",\n  \"contentType\": \"notes\",\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"subjectId\": \"{{subjectId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST teacher schedule-class",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacherToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teacher/schedule-class",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teacher",
+                "schedule-class"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{classSessionTitle}}\",\n  \"description\": \"{{classSessionDescription}}\",\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"date\": \"{{futureDate}}\",\n  \"startTime\": \"10:00\",\n  \"endTime\": \"11:00\",\n  \"meetingLink\": \"{{meetingLink}}\"\n}"
+            }
           }
         }
       ]
@@ -157,27 +650,69 @@
       "name": "Student Portal",
       "item": [
         {
-          "name": "Student Content",
+          "name": "GET student content",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{studentToken}}" }],
-            "url": { "raw": "{{baseUrl}}/student/content", "host": ["{{baseUrl}}"], "path": ["student", "content"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/student/content",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "student",
+                "content"
+              ]
+            }
           }
         },
         {
-          "name": "Student Upcoming Classes",
+          "name": "GET student upcoming-classes",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{studentToken}}" }],
-            "url": { "raw": "{{baseUrl}}/student/upcoming-classes", "host": ["{{baseUrl}}"], "path": ["student", "upcoming-classes"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/student/upcoming-classes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "student",
+                "upcoming-classes"
+              ]
+            }
           }
         },
         {
-          "name": "Student Results",
+          "name": "GET student results",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{studentToken}}" }],
-            "url": { "raw": "{{baseUrl}}/student/results", "host": ["{{baseUrl}}"], "path": ["student", "results"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/student/results",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "student",
+                "results"
+              ]
+            }
           }
         }
       ]
@@ -186,52 +721,1707 @@
       "name": "Parent Portal",
       "item": [
         {
-          "name": "Parent Student",
+          "name": "GET parent student",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{parentToken}}" }],
-            "url": { "raw": "{{baseUrl}}/parent/student", "host": ["{{baseUrl}}"], "path": ["parent", "student"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/parent/student",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "parent",
+                "student"
+              ]
+            }
           }
         },
         {
-          "name": "Parent Attendance",
+          "name": "GET parent attendance",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{parentToken}}" }],
-            "url": { "raw": "{{baseUrl}}/parent/attendance", "host": ["{{baseUrl}}"], "path": ["parent", "attendance"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/parent/attendance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "parent",
+                "attendance"
+              ]
+            }
           }
         },
         {
-          "name": "Parent Results",
+          "name": "GET parent results",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{parentToken}}" }],
-            "url": { "raw": "{{baseUrl}}/parent/results", "host": ["{{baseUrl}}"], "path": ["parent", "results"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/parent/results",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "parent",
+                "results"
+              ]
+            }
           }
         },
         {
-          "name": "Parent Upcoming Classes",
+          "name": "GET parent upcoming-classes",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{parentToken}}" }],
-            "url": { "raw": "{{baseUrl}}/parent/upcoming-classes", "host": ["{{baseUrl}}"], "path": ["parent", "upcoming-classes"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/parent/upcoming-classes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "parent",
+                "upcoming-classes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET parent report-card",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/parent/report-card",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "parent",
+                "report-card"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Domains",
+      "item": [
+        {
+          "name": "POST domains",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/domains",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "domains"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{domainName}}\",\n  \"code\": \"{{domainCode}}\",\n  \"description\": \"{{domainDescription}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET domains",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/domains",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "domains"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Classes",
+      "item": [
+        {
+          "name": "POST classes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/classes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "classes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domainId\": \"{{domainId}}\",\n  \"className\": \"{{className}}\",\n  \"standardNumber\": 6,\n  \"section\": \"{{section}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET classes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/classes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "classes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST classes id assign-teacher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/classes/{{id}}/assign-teacher",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "classes",
+                "{{id}}",
+                "assign-teacher"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teacherId\": \"{{teacherId}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subjects",
+      "item": [
+        {
+          "name": "POST subjects",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subjects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subjects"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"name\": \"{{subjectName1}}\",\n  \"code\": \"{{subjectCode}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET subjects",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subjects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subjects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST subjects id assign-teacher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subjects/{{id}}/assign-teacher",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subjects",
+                "{{id}}",
+                "assign-teacher"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teacherId\": \"{{teacherId}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teachers",
+      "item": [
+        {
+          "name": "POST teachers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teachers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teachers"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{teacherFullName}}\",\n  \"email\": \"{{teacherEmail}}\",\n  \"phone\": \"{{teacherPhone}}\",\n  \"domainIds\": [\n    \"{{domainId}}\"\n  ],\n  \"subjectIds\": [\n    \"{{subjectId}}\"\n  ],\n  \"assignedClassIds\": [\n    \"{{classId}}\"\n  ],\n  \"experience\": \"{{teacherExperience}}\",\n  \"qualification\": \"{{teacherQualification}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET teachers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teachers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teachers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET teachers me classes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teachers/me/classes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teachers",
+                "me",
+                "classes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET teachers me classes classId students",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teachers/me/classes/{{classId}}/students",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teachers",
+                "me",
+                "classes",
+                "{{classId}}",
+                "students"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET teachers id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teachers/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teachers",
+                "{{id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT teachers id",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teachers/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teachers",
+                "{{id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{teacherFullName}}\",\n  \"email\": \"{{teacherEmail}}\",\n  \"phone\": \"{{teacherPhone}}\",\n  \"experience\": \"{{teacherExperience}}\",\n  \"qualification\": \"{{teacherQualification}}\",\n  \"isActive\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE teachers id",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teachers/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teachers",
+                "{{id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Students",
+      "item": [
+        {
+          "name": "POST students",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/students",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "students"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"{{studentFullName}}\",\n  \"dateOfBirth\": \"{{studentDateOfBirth}}\",\n  \"gender\": \"{{studentGender}}\",\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"className\": \"{{className}}\",\n  \"section\": \"{{section}}\",\n  \"rollNumber\": \"{{rollNumber}}\",\n  \"parentName\": \"{{parentName}}\",\n  \"parentPhone\": \"{{parentPhone}}\",\n  \"parentEmail\": \"{{parentEmail}}\",\n  \"address\": \"{{address}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET students",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/students",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "students"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET students id progress",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/students/{{id}}/progress",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "students",
+                "{{id}}",
+                "progress"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET students id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/students/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "students",
+                "{{id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT students id",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/students/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "students",
+                "{{id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"{{studentFullName}}\",\n  \"address\": \"{{address}}\",\n  \"parentPhone\": \"{{parentPhone}}\",\n  \"improvementNotes\": \"{{improvementNotes}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE students id",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/students/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "students",
+                "{{id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        {
+          "name": "POST attendance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/attendance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "attendance"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"{{todayDate}}\",\n  \"classId\": \"{{classId}}\",\n  \"records\": [\n    {\n      \"studentId\": \"{{studentId}}\",\n      \"status\": \"present\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "GET attendance class id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/attendance/class/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "attendance",
+                "class",
+                "{{id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET attendance student id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/attendance/student/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "attendance",
+                "student",
+                "{{id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exams",
+      "item": [
+        {
+          "name": "POST exams",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/exams",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exams"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{examName}}\",\n  \"examType\": \"MID_TERM\",\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"section\": \"{{section}}\",\n  \"examDate\": \"{{futureDate}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET exams",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/exams",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exams"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Marks",
+      "item": [
+        {
+          "name": "POST marks",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/marks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "marks"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"examId\": \"{{examId}}\",\n  \"studentId\": \"{{studentId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"obtainedMarks\": 80,\n  \"totalMarks\": 100\n}"
+            }
+          }
+        },
+        {
+          "name": "GET marks student id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/marks/student/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "marks",
+                "student",
+                "{{id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET marks exam id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/marks/exam/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "marks",
+                "exam",
+                "{{id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Results",
+      "item": [
+        {
+          "name": "POST results student id generate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/results/student/{{id}}/generate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "results",
+                "student",
+                "{{id}}",
+                "generate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"examId\": \"{{examId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET results student id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/results/student/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "results",
+                "student",
+                "{{id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET results student id report-card",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/results/student/{{id}}/report-card",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "results",
+                "student",
+                "{{id}}",
+                "report-card"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Assignments",
+      "item": [
+        {
+          "name": "POST assignments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assignments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assignments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{assignmentTitle}}\",\n  \"description\": \"{{assignmentDescription}}\",\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"dueDate\": \"{{futureDate}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET assignments class id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assignments/class/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assignments",
+                "class",
+                "{{id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET assignments student id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/assignments/student/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "assignments",
+                "student",
+                "{{id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "GET admin analytics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/analytics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "analytics"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET admin dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST admin create-teacher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/create-teacher",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "create-teacher"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{teacherFullName}}\",\n  \"email\": \"{{teacherEmail}}\",\n  \"phone\": \"{{teacherPhone}}\",\n  \"domainIds\": [\n    \"{{domainId}}\"\n  ],\n  \"subjectIds\": [\n    \"{{subjectId}}\"\n  ],\n  \"assignedClassIds\": [\n    \"{{classId}}\"\n  ],\n  \"experience\": \"{{teacherExperience}}\",\n  \"qualification\": \"{{teacherQualification}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST admin create-student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/create-student",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "create-student"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"{{studentFullName}}\",\n  \"dateOfBirth\": \"{{studentDateOfBirth}}\",\n  \"gender\": \"{{studentGender}}\",\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"className\": \"{{className}}\",\n  \"section\": \"{{section}}\",\n  \"rollNumber\": \"{{rollNumber}}\",\n  \"parentName\": \"{{parentName}}\",\n  \"parentPhone\": \"{{parentPhone}}\",\n  \"parentEmail\": \"{{parentEmail}}\",\n  \"address\": \"{{address}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST admin create-class",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/create-class",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "create-class"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domainId\": \"{{domainId}}\",\n  \"className\": \"{{className}}\",\n  \"standardNumber\": 6,\n  \"section\": \"{{section}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST admin create-subject",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/create-subject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "create-subject"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domainId\": \"{{domainId}}\",\n  \"classId\": \"{{classId}}\",\n  \"name\": \"{{subjectName1}}\",\n  \"code\": \"{{subjectCode}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST admin assign-teacher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/assign-teacher",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "assign-teacher"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teacherId\": \"{{teacherId}}\",\n  \"classId\": \"{{classId}}\",\n  \"subjectId\": \"{{subjectId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET admin teacher-applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/teacher-applications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "teacher-applications"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET admin student-applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/student-applications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "student-applications"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST admin approve-teacher id",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/approve-teacher/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "approve-teacher",
+                "{{id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "POST admin approve-student id",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/approve-student/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "approve-student",
+                "{{id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"classId\": \"{{classId}}\",\n  \"rollNumber\": \"{{rollNumber}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST admin reject-teacher id",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reject-teacher/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reject-teacher",
+                "{{id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"remark\": \"{{rejectRemark}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST admin reject-student id",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reject-student/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reject-student",
+                "{{id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"remark\": \"{{rejectRemark}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET admin export students",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/export/students",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "export",
+                "students"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET admin export report-card studentId",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/export/report-card/{{studentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "export",
+                "report-card",
+                "{{studentId}}"
+              ]
+            }
           }
         }
       ]
     }
   ],
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:4000" },
-    { "key": "adminEmail", "value": "admin@schoolerp.com" },
-    { "key": "adminPassword", "value": "Admin@123" },
-    { "key": "parentPassword", "value": "@@QzH6uyrX" },
-    { "key": "adminToken", "value": "" },
-    { "key": "teacherToken", "value": "" },
-    { "key": "studentToken", "value": "" },
-    { "key": "parentToken", "value": "" },
-    { "key": "domainId", "value": "" },
-    { "key": "classId", "value": "" },
-    { "key": "subjectId", "value": "" },
-    { "key": "studentId", "value": "" }
+    {
+      "key": "baseUrl",
+      "value": "https://ascento-abacus-ow3u.onrender.com"
+    },
+    {
+      "key": "adminEmail",
+      "value": ""
+    },
+    {
+      "key": "adminPassword",
+      "value": ""
+    },
+    {
+      "key": "teacherIdentifier",
+      "value": ""
+    },
+    {
+      "key": "teacherPassword",
+      "value": ""
+    },
+    {
+      "key": "studentIdentifier",
+      "value": ""
+    },
+    {
+      "key": "studentPassword",
+      "value": ""
+    },
+    {
+      "key": "parentEmail",
+      "value": ""
+    },
+    {
+      "key": "parentPhone",
+      "value": ""
+    },
+    {
+      "key": "parentPassword",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "teacherToken",
+      "value": ""
+    },
+    {
+      "key": "studentToken",
+      "value": ""
+    },
+    {
+      "key": "parentToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "domainId",
+      "value": ""
+    },
+    {
+      "key": "classId",
+      "value": ""
+    },
+    {
+      "key": "subjectId",
+      "value": ""
+    },
+    {
+      "key": "teacherId",
+      "value": ""
+    },
+    {
+      "key": "studentId",
+      "value": ""
+    },
+    {
+      "key": "examId",
+      "value": ""
+    },
+    {
+      "key": "teacherFullName",
+      "value": ""
+    },
+    {
+      "key": "teacherEmail",
+      "value": ""
+    },
+    {
+      "key": "teacherPhone",
+      "value": ""
+    },
+    {
+      "key": "teacherQualification",
+      "value": ""
+    },
+    {
+      "key": "teacherExperience",
+      "value": "0"
+    },
+    {
+      "key": "studentFullName",
+      "value": ""
+    },
+    {
+      "key": "studentDateOfBirth",
+      "value": ""
+    },
+    {
+      "key": "studentGender",
+      "value": "male"
+    },
+    {
+      "key": "className",
+      "value": ""
+    },
+    {
+      "key": "section",
+      "value": "A"
+    },
+    {
+      "key": "rollNumber",
+      "value": ""
+    },
+    {
+      "key": "parentName",
+      "value": ""
+    },
+    {
+      "key": "address",
+      "value": ""
+    },
+    {
+      "key": "admissionDate",
+      "value": ""
+    },
+    {
+      "key": "previousSchool",
+      "value": ""
+    },
+    {
+      "key": "improvementNotes",
+      "value": ""
+    },
+    {
+      "key": "subjectName1",
+      "value": ""
+    },
+    {
+      "key": "subjectName2",
+      "value": ""
+    },
+    {
+      "key": "subjectCode",
+      "value": ""
+    },
+    {
+      "key": "domainName",
+      "value": ""
+    },
+    {
+      "key": "domainCode",
+      "value": ""
+    },
+    {
+      "key": "domainDescription",
+      "value": ""
+    },
+    {
+      "key": "resumeBase64",
+      "value": ""
+    },
+    {
+      "key": "supportingDocumentName",
+      "value": ""
+    },
+    {
+      "key": "supportingDocumentBase64",
+      "value": ""
+    },
+    {
+      "key": "assignmentTitle",
+      "value": ""
+    },
+    {
+      "key": "assignmentDescription",
+      "value": ""
+    },
+    {
+      "key": "announcementTitle",
+      "value": ""
+    },
+    {
+      "key": "announcementDescription",
+      "value": ""
+    },
+    {
+      "key": "contentTitle",
+      "value": ""
+    },
+    {
+      "key": "contentDescription",
+      "value": ""
+    },
+    {
+      "key": "classSessionTitle",
+      "value": ""
+    },
+    {
+      "key": "classSessionDescription",
+      "value": ""
+    },
+    {
+      "key": "meetingLink",
+      "value": ""
+    },
+    {
+      "key": "examName",
+      "value": ""
+    },
+    {
+      "key": "todayDate",
+      "value": ""
+    },
+    {
+      "key": "futureDate",
+      "value": ""
+    },
+    {
+      "key": "rejectRemark",
+      "value": ""
+    }
   ]
 }

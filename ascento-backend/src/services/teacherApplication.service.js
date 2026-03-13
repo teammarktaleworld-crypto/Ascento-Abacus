@@ -6,6 +6,7 @@ const teacherService = require('./teacher.service');
 
 async function applyTeacher(payload) {
   const hasResume = Boolean(payload.resumeBase64 || (payload.resume && payload.resume.url));
+  const uploadedDocuments = [];
 
   if (!Number.isFinite(Number(payload.experience)) || Number(payload.experience) < 0) {
     throw { status: 400, message: 'Teacher experience must be a valid number' };
@@ -13,6 +14,28 @@ async function applyTeacher(payload) {
 
   if (!hasResume) {
     throw { status: 400, message: 'Teacher CV or resume is required' };
+  }
+
+  if (!Array.isArray(payload.supportingDocuments)) {
+    payload.supportingDocuments = [];
+  }
+
+  if (!Array.isArray(payload.documentUploads)) {
+    payload.documentUploads = [];
+  }
+
+  for (const item of payload.documentUploads) {
+    const upload = await uploadBase64(item.base64, 'school-erp/teacher-applications/documents');
+    uploadedDocuments.push({
+      name: item.name,
+      url: upload.url,
+      publicId: upload.publicId
+    });
+  }
+
+  const supportingDocuments = [...payload.supportingDocuments, ...uploadedDocuments];
+  if (!supportingDocuments.length) {
+    throw { status: 400, message: 'At least one supporting document is required' };
   }
 
   const duplicate = await TeacherApplication.findOne({
@@ -61,6 +84,7 @@ async function applyTeacher(payload) {
     expectedSalary: payload.expectedSalary,
     availabilityDate: payload.availabilityDate,
     resume,
+    supportingDocuments,
     profilePhoto,
     status: 'pending'
   });
