@@ -78,6 +78,11 @@ const rejectStudent = asyncHandler(async (req, res) => {
   res.json(data);
 });
 
+const cleanupDemoData = asyncHandler(async (req, res) => {
+  const data = await adminService.cleanupDemoData();
+  res.json({ message: 'Demo data cleanup completed', summary: data });
+});
+
 const exportStudents = asyncHandler(async (req, res) => {
   const csv = await adminService.exportStudentsSheet();
   res.setHeader('Content-Type', 'application/vnd.ms-excel');
@@ -106,6 +111,7 @@ module.exports = {
   approveStudent,
   rejectTeacher,
   rejectStudent,
+  cleanupDemoData,
   exportStudents,
   exportReportCard
 };

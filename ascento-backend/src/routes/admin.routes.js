@@ -32,6 +32,7 @@ router.post('/approve-teacher/:id', controller.approveTeacher);
 router.post('/approve-student/:id', validate(approveStudentApplicationSchema), controller.approveStudent);
 router.post('/reject-teacher/:id', validate(rejectApplicationSchema), controller.rejectTeacher);
 router.post('/reject-student/:id', validate(rejectApplicationSchema), controller.rejectStudent);
+router.post('/cleanup-demo-data', controller.cleanupDemoData);
 
 router.get('/export/students', controller.exportStudents);
 router.get('/export/report-card/:studentId', controller.exportReportCard);
