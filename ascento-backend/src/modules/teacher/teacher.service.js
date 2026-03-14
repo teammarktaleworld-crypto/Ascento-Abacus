@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const AppError = require('../../core/AppError');
 const Domain = require('../../models/domain.model.js');
 const Session = require('../../models/Session.model');
-const Teacher = require('../../models/Teacher.model');
+const Teacher = require('../../models/teacher.model');
 
 const teacherPopulate = {
   path: 'domainId',

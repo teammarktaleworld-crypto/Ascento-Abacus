@@ -9,7 +9,7 @@ const env = require('./env');
  */
 const seedAdmin = async () => {
   // Require here to avoid circular dependency during model loading
-  const Admin = require('../models/Admin.model');
+  const Admin = require('../models/admin.model');
 
   const existing = await Admin.findOne({ email: env.ADMIN_EMAIL });
   if (existing) {

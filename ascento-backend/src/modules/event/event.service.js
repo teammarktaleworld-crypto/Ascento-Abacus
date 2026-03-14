@@ -1,7 +1,7 @@
 'use strict';
 
 const AppError = require('../../core/AppError');
-const Event = require('../../models/Event.model');
+const Event = require('../../models/event.model');
 
 const normalizeEventDate = (value) => {
   const parsed = new Date(value);

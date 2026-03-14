@@ -22,10 +22,10 @@ const isUserActive = (user) => {
  */
 const getModelForRole = (role) => {
   switch (role) {
-    case 'admin':   return require('../models/Admin.model');
-    case 'teacher': return require('../models/Teacher.model');
-    case 'student': return require('../models/Student.model');
-    case 'parent':  return require('../models/Parent.model');
+    case 'admin':   return require('../models/admin.model');
+    case 'teacher': return require('../models/teacher.model');
+    case 'student': return require('../models/student.model');
+    case 'parent':  return require('../models/parent.model');
     default:        return null;
   }
 };

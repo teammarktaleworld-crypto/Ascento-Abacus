@@ -1,12 +1,12 @@
 'use strict';
 
 const AppError = require('../../core/AppError');
-const ClassModel = require('../../models/Class.model');
-const Notification = require('../../models/Notification.model');
-const Parent = require('../../models/Parent.model');
-const Student = require('../../models/Student.model');
+const ClassModel = require('../../models/class.model');
+const Notification = require('../../models/notification.model');
+const Parent = require('../../models/parent.model');
+const Student = require('../../models/student.model');
 const StudentEnrollment = require('../../models/StudentEnrollment.model');
-const Teacher = require('../../models/Teacher.model');
+const Teacher = require('../../models/teacher.model');
 const TeacherAssignment = require('../../models/TeacherAssignment.model');
 
 const ensureTargetExists = async (targetType, targetId) => {

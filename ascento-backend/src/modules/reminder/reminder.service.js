@@ -1,12 +1,12 @@
 'use strict';
 
 const AppError = require('../../core/AppError');
-const ClassModel = require('../../models/Class.model');
-const Parent = require('../../models/Parent.model');
+const ClassModel = require('../../models/class.model');
+const Parent = require('../../models/parent.model');
 const Reminder = require('../../models/Reminder.model');
-const Student = require('../../models/Student.model');
+const Student = require('../../models/student.model');
 const StudentEnrollment = require('../../models/StudentEnrollment.model');
-const Teacher = require('../../models/Teacher.model');
+const Teacher = require('../../models/teacher.model');
 const TeacherAssignment = require('../../models/TeacherAssignment.model');
 
 const normalizeReminderDate = (value) => {

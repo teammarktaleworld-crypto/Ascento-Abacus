@@ -1,9 +1,9 @@
 'use strict';
 
 const AppError = require('../../core/AppError');
-const Exam = require('../../models/Exam.model');
+const Exam = require('../../models/exam.model');
 const ExamSubject = require('../../models/ExamSubject.model');
-const Subject = require('../../models/Subject.model');
+const Subject = require('../../models/subject.model');
 
 const examSubjectPopulate = [
   {

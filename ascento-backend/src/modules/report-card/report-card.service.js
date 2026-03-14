@@ -1,9 +1,9 @@
 'use strict';
 
 const AppError = require('../../core/AppError');
-const Exam = require('../../models/Exam.model');
+const Exam = require('../../models/exam.model');
 const ExamSubject = require('../../models/ExamSubject.model');
-const Mark = require('../../models/Mark.model');
+const Mark = require('../../models/mark.model');
 const StudentEnrollment = require('../../models/StudentEnrollment.model');
 
 const roundToTwo = (value) => Math.round(value * 100) / 100;

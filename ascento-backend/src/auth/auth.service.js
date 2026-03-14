@@ -8,17 +8,17 @@ const env = require('../config/env');
 // ─── Role → model mapping ────────────────────────────────────────────────────
 
 const ROLE_CONFIG = {
-  admin:   { getModel: () => require('../models/Admin.model'),   userModel: 'Admin' },
-  teacher: { getModel: () => require('../models/Teacher.model'), userModel: 'Teacher' },
-  student: { getModel: () => require('../models/Student.model'), userModel: 'Student' },
-  parent:  { getModel: () => require('../models/Parent.model'),  userModel: 'Parent' },
+  admin:   { getModel: () => require('../models/admin.model'),   userModel: 'Admin' },
+  teacher: { getModel: () => require('../models/teacher.model'), userModel: 'Teacher' },
+  student: { getModel: () => require('../models/student.model'), userModel: 'Student' },
+  parent:  { getModel: () => require('../models/parent.model'),  userModel: 'Parent' },
 };
 
 const USER_MODEL_LOOKUP = {
-  Admin: () => require('../models/Admin.model'),
-  Teacher: () => require('../models/Teacher.model'),
-  Student: () => require('../models/Student.model'),
-  Parent: () => require('../models/Parent.model'),
+  Admin: () => require('../models/admin.model'),
+  Teacher: () => require('../models/teacher.model'),
+  Student: () => require('../models/student.model'),
+  Parent: () => require('../models/parent.model'),
 };
 
 const isUserActive = (user) => {

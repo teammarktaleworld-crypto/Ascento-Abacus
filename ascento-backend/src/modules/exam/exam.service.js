@@ -2,8 +2,8 @@
 
 const AppError = require('../../core/AppError');
 const AcademicYear = require('../../models/AcademicYear.model');
-const ClassModel = require('../../models/Class.model');
-const Exam = require('../../models/Exam.model');
+const ClassModel = require('../../models/class.model');
+const Exam = require('../../models/exam.model');
 const StudentEnrollment = require('../../models/StudentEnrollment.model');
 const TeacherAssignment = require('../../models/TeacherAssignment.model');
 

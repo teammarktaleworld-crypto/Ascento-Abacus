@@ -2,7 +2,7 @@
 
 const AppError = require('../../core/AppError');
 const authService = require('../../auth/auth.service');
-const Admin = require('../../models/Admin.model');
+const Admin = require('../../models/admin.model');
 const env = require('../../config/env');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

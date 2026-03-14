@@ -2,9 +2,9 @@
 
 const AppError = require('../../core/AppError');
 const AcademicYear = require('../../models/AcademicYear.model');
-const ClassModel = require('../../models/Class.model');
-const Fee = require('../../models/Fee.model');
-const Student = require('../../models/Student.model');
+const ClassModel = require('../../models/class.model');
+const Fee = require('../../models/fee.model');
+const Student = require('../../models/student.model');
 const StudentEnrollment = require('../../models/StudentEnrollment.model');
 
 const feePopulate = [

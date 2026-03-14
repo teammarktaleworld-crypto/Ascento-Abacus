@@ -1,7 +1,7 @@
 'use strict';
 
 const AppError = require('../../core/AppError');
-const ClassModel = require('../../models/Class.model');
+const ClassModel = require('../../models/class.model');
 const Domain = require('../../models/domain.model.js');
 
 const ensureDomainExists = async (domainId) => {

@@ -1,14 +1,14 @@
 'use strict';
 
-const Attendance = require('../../models/Attendance.model');
-const ClassModel = require('../../models/Class.model');
-const Enquiry = require('../../models/Enquiry.model');
-const Fee = require('../../models/Fee.model');
+const Attendance = require('../../models/attendance.model');
+const ClassModel = require('../../models/class.model');
+const Enquiry = require('../../models/enquiry.model');
+const Fee = require('../../models/fee.model');
 const Meeting = require('../../models/Meeting.model');
-const Notification = require('../../models/Notification.model');
-const Student = require('../../models/Student.model');
-const Subject = require('../../models/Subject.model');
-const Teacher = require('../../models/Teacher.model');
+const Notification = require('../../models/notification.model');
+const Student = require('../../models/student.model');
+const Subject = require('../../models/subject.model');
+const Teacher = require('../../models/teacher.model');
 
 const getDayBounds = (date = new Date()) => {
   const start = new Date(date);

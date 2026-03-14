@@ -1,8 +1,8 @@
 'use strict';
 
 const AppError = require('../../core/AppError');
-const ClassModel = require('../../models/Class.model');
-const Subject = require('../../models/Subject.model');
+const ClassModel = require('../../models/class.model');
+const Subject = require('../../models/subject.model');
 
 const classPopulate = {
   path: 'classId',

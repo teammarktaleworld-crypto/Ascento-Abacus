@@ -1,10 +1,10 @@
 'use strict';
 
 const AppError = require('../../core/AppError');
-const Attendance = require('../../models/Attendance.model');
-const ClassModel = require('../../models/Class.model');
+const Attendance = require('../../models/attendance.model');
+const ClassModel = require('../../models/class.model');
 const Section = require('../../models/Section.model');
-const Student = require('../../models/Student.model');
+const Student = require('../../models/student.model');
 const StudentEnrollment = require('../../models/StudentEnrollment.model');
 const TeacherAssignment = require('../../models/TeacherAssignment.model');
 

@@ -1,7 +1,7 @@
 'use strict';
 
 const AppError = require('../../core/AppError');
-const Enquiry = require('../../models/Enquiry.model');
+const Enquiry = require('../../models/enquiry.model');
 
 const create = async (data) => Enquiry.create({
   fullName: data.fullName,

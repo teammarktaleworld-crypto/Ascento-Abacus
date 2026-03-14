@@ -1,9 +1,9 @@
 'use strict';
 
 const AppError = require('../../core/AppError');
-const ClassModel = require('../../models/Class.model');
+const ClassModel = require('../../models/class.model');
 const Section = require('../../models/Section.model');
-const Student = require('../../models/Student.model');
+const Student = require('../../models/student.model');
 const StudentEnrollment = require('../../models/StudentEnrollment.model');
 
 const enrollmentPopulate = [
