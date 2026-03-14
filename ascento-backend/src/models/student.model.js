@@ -32,7 +32,11 @@ const studentSchema = new mongoose.Schema({
   },
   dateOfBirth: {
     type: Date,
-    required: [true, 'dateOfBirth is required'],
+  },
+  age: {
+    type: Number,
+    min: [1, 'age must be at least 1'],
+    max: [120, 'age must be less than or equal to 120'],
   },
   gender: {
     type: String,
@@ -108,6 +112,14 @@ studentSchema.plugin(auditFieldsPlugin);
 studentSchema.virtual('isActive').get(function () {
   return this.status === 'active';
 });
+
+studentSchema.virtual('dob')
+  .get(function () {
+    return this.dateOfBirth;
+  })
+  .set(function (value) {
+    this.dateOfBirth = value;
+  });
 
 studentSchema.set('toJSON', { virtuals: true });
 studentSchema.set('toObject', { virtuals: true });

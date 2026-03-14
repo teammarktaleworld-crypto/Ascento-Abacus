@@ -9,6 +9,8 @@ const create = asyncHandler(async (req, res) => {
   const {
     fullName,
     dateOfBirth,
+    dob,
+    age,
     gender,
     parentName,
     parentPhone,
@@ -23,9 +25,11 @@ const create = asyncHandler(async (req, res) => {
     profilePhoto,
   } = req.body;
 
-  if (!fullName || !dateOfBirth || !gender || !parentName || !parentPhone || !parentEmail || !domainId) {
+  const resolvedDateOfBirth = dateOfBirth || dob;
+
+  if (!fullName || !gender || !parentName || !parentPhone || !parentEmail || !domainId) {
     throw new AppError(
-      'fullName, dateOfBirth, gender, parentName, parentPhone, parentEmail, and domainId are required.',
+      'fullName, gender, parentName, parentPhone, parentEmail, and domainId are required.',
       400,
     );
   }
@@ -33,7 +37,8 @@ const create = asyncHandler(async (req, res) => {
   const result = await studentService.create(
     {
       fullName,
-      dateOfBirth,
+      dateOfBirth: resolvedDateOfBirth,
+      age,
       gender,
       parentName,
       parentPhone,

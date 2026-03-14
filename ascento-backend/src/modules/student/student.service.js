@@ -23,15 +23,37 @@ const sanitiseStudent = (student) => {
   return obj;
 };
 
-const create = async (data, adminId) => {
-  await ensureDomainExists(data.domainId);
+const normalizeStudentPayload = (payload) => {
+  const normalized = { ...payload };
 
-  const password = data.password || 'Student@123';
+  if (!normalized.dateOfBirth && normalized.dob) {
+    normalized.dateOfBirth = normalized.dob;
+  }
+
+  delete normalized.dob;
+
+  if (normalized.age !== undefined) {
+    const numericAge = Number(normalized.age);
+    if (!Number.isInteger(numericAge) || numericAge < 1 || numericAge > 120) {
+      throw new AppError('age must be an integer between 1 and 120.', 400);
+    }
+
+    normalized.age = numericAge;
+  }
+
+  return normalized;
+};
+
+const create = async (data, adminId) => {
+  const normalizedData = normalizeStudentPayload(data);
+  await ensureDomainExists(normalizedData.domainId);
+
+  const password = normalizedData.password || 'Student@123';
   const student = await Student.create({
-    ...data,
+    ...normalizedData,
     password,
-    parentEmail: data.parentEmail.toLowerCase().trim(),
-    isPasswordTemporary: !data.password,
+    parentEmail: normalizedData.parentEmail.toLowerCase().trim(),
+    isPasswordTemporary: !normalizedData.password,
     createdBy: adminId,
     updatedBy: adminId,
   });
@@ -43,7 +65,7 @@ const create = async (data, adminId) => {
   return {
     student: sanitiseStudent(createdStudent),
     studentLoginEmail: createdStudent.parentEmail,
-    temporaryPassword: !data.password ? password : null,
+    temporaryPassword: !normalizedData.password ? password : null,
   };
 };
 
@@ -102,7 +124,7 @@ const getById = async (id) => {
 };
 
 const update = async (id, data, adminId) => {
-  const updateData = { ...data, updatedBy: adminId };
+  const updateData = { ...normalizeStudentPayload(data), updatedBy: adminId };
 
   delete updateData.password;
   delete updateData.sessionKey;
