@@ -1,6 +1,11 @@
 'use strict';
 
-require('dotenv').config();
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Load .env from project root first; fallback to current working directory.
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config();
 
 const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
