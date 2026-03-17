@@ -41,6 +41,17 @@ const create = async (data, adminId) => {
     updatedBy: adminId,
   });
 
+  // Create a session for the new teacher
+  const sessionKey = crypto.randomBytes(32).toString('hex');
+  await Session.create({
+    userId: teacher._id,
+    userModel: 'Teacher',
+    sessionKey,
+    role: 'teacher',
+    isActive: true,
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 days expiry
+  });
+
   const createdTeacher = await Teacher.findById(teacher._id)
     .select('-password')
     .populate(teacherPopulate);
@@ -49,6 +60,7 @@ const create = async (data, adminId) => {
     teacher: sanitiseTeacher(createdTeacher),
     teacherEmail: createdTeacher.email,
     temporaryPassword,
+    sessionKey,
   };
 };
 

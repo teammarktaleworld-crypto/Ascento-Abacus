@@ -6,10 +6,18 @@ const crypto = require('crypto');
 const env = require('../config/env');
 const auditFieldsPlugin = require('./plugins/auditFields.plugin');
 
-const generateRollNumber = () => {
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const suffix = crypto.randomBytes(2).toString('hex').toUpperCase();
-  return `STU-${timestamp}-${suffix}`;
+// Generates roll number in format STU-YYYY-XXXX (XXXX is a zero-padded incrementing number per year)
+const generateRollNumber = async function () {
+  const year = new Date().getFullYear();
+  const Student = mongoose.models.Student || mongoose.model('Student');
+  const count = await Student.countDocuments({
+    createdAt: {
+      $gte: new Date(`${year}-01-01T00:00:00.000Z`),
+      $lte: new Date(`${year}-12-31T23:59:59.999Z`)
+    }
+  });
+  const next = (count + 1).toString().padStart(4, '0');
+  return `STU-${year}-${next}`;
 };
 
 const studentSchema = new mongoose.Schema({
@@ -69,7 +77,6 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    default: generateRollNumber,
     trim: true,
   },
   address: {
@@ -124,9 +131,15 @@ studentSchema.virtual('dob')
 studentSchema.set('toJSON', { virtuals: true });
 studentSchema.set('toObject', { virtuals: true });
 
+
+// Set roll number before saving if not set
 studentSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, env.BCRYPT_SALT_ROUNDS);
+  if (!this.rollNumber) {
+    this.rollNumber = await generateRollNumber.call(this);
+  }
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, env.BCRYPT_SALT_ROUNDS);
+  }
   next();
 });
 

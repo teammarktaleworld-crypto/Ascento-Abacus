@@ -48,10 +48,11 @@ const create = async (data, adminId) => {
   const normalizedData = normalizeStudentPayload(data);
   await ensureDomainExists(normalizedData.domainId);
 
-  const password = normalizedData.password || 'Student@123';
+  // Always generate a secure temporary password if not provided
+  const tempPassword = normalizedData.password || `Stu@${Math.random().toString(36).slice(-8)}`;
   const student = await Student.create({
     ...normalizedData,
-    password,
+    password: tempPassword,
     parentEmail: normalizedData.parentEmail.toLowerCase().trim(),
     isPasswordTemporary: !normalizedData.password,
     createdBy: adminId,
@@ -65,7 +66,7 @@ const create = async (data, adminId) => {
   return {
     student: sanitiseStudent(createdStudent),
     studentLoginEmail: createdStudent.parentEmail,
-    temporaryPassword: !normalizedData.password ? password : null,
+    temporaryPassword: !normalizedData.password ? tempPassword : null,
   };
 };
 

@@ -1,0 +1,249 @@
+{
+  "info": {
+    "name": "Ascento Student API Collection",
+    "description": "Postman collection for student app APIs using https://ascento-abacus.onrender.com",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Student",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-session-key", "value": "{{sessionKey}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Test Student {{suffix}}\",\n  \"parentName\": \"Test Parent\",\n  \"parentPhone\": \"9999999999\",\n  \"parentEmail\": \"test.student.{{suffix}}@school.com\",\n  \"domainId\": \"{{domainId}}\",\n  \"gender\": \"male\",\n  \"dateOfBirth\": \"2012-01-01\",\n  \"address\": \"123 Test Lane\",\n  \"city\": \"Test City\",\n  \"state\": \"Test State\",\n  \"bloodGroup\": \"O+\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/admin/students",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin","students"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Student created', function () { pm.response.to.have.status(201); });",
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set('studentId', json.data.student.id);",
+              "pm.collectionVariables.set('studentLoginEmail', json.data.student.parentEmail);",
+              "pm.collectionVariables.set('studentLoginPassword', json.data.temporaryPassword);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{studentLoginEmail}}\",\n  \"password\": \"{{studentLoginPassword}}\",\n  \"role\": \"student\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth","login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Student login success', function () { pm.response.to.have.status(200); });",
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set('studentSessionKey', json.data.sessionKey);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"student1@example.com\",\n  \"password\": \"Student@123\",\n  \"role\": \"student\"\n}"
+        },
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/auth/login",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","auth","login"]
+        }
+      }
+    },
+    {
+      "name": "Me",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-session-key", "value": "{{sessionKey}}" }
+        ],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/auth/me",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","auth","me"]
+        }
+      }
+    },
+    {
+      "name": "Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-session-key", "value": "{{sessionKey}}" }
+        ],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/student/dashboard",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","student","dashboard"]
+        }
+      }
+    },
+    {
+      "name": "Homework List",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-session-key", "value": "{{sessionKey}}" }
+        ],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/student/homework",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","student","homework"]
+        }
+      }
+    },
+    {
+      "name": "Homework Detail",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-session-key", "value": "{{sessionKey}}" }
+        ],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/student/homework/12345",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","student","homework","12345"]
+        }
+      }
+    },
+    {
+      "name": "Attendance",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-session-key", "value": "{{sessionKey}}" }
+        ],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/student/attendance",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","student","attendance"]
+        }
+      }
+    },
+    {
+      "name": "Fees",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-session-key", "value": "{{sessionKey}}" }
+        ],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/student/fees",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","student","fees"]
+        }
+      }
+    },
+    {
+      "name": "Timetable Daily",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-session-key", "value": "{{sessionKey}}" }
+        ],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/student/timetable?dayOfWeek=monday",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","student","timetable"],
+          "query": [
+            { "key": "dayOfWeek", "value": "monday" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Timetable Weekly",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-session-key", "value": "{{sessionKey}}" }
+        ],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/student/timetable",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","student","timetable"]
+        }
+      }
+    },
+    {
+      "name": "Exams",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-session-key", "value": "{{sessionKey}}" }
+        ],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/student/exams",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","student","exams"]
+        }
+      }
+    },
+    {
+      "name": "Meet Links",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-session-key", "value": "{{sessionKey}}" }
+        ],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/student/meetLinks",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","student","meetLinks"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "sessionKey", "value": "" }
+  ]
+}
