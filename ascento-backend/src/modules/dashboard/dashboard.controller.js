@@ -52,7 +52,13 @@ const getStudentDashboard = asyncHandler(async (req, res) => {
   return new ApiResponse(200, 'Student dashboard fetched', response).send(res);
 });
 
+const getTeacherDashboard = asyncHandler(async (req, res) => {
+  const data = await dashboardService.getTeacherDashboardAnalytics(req.user._id);
+  return new ApiResponse(200, 'Teacher dashboard fetched', data).send(res);
+});
+
 module.exports = {
   getDashboard,
   getStudentDashboard,
+  getTeacherDashboard,
 };

@@ -9,6 +9,9 @@ const Notification = require('../../models/notification.model');
 const Student = require('../../models/student.model');
 const Subject = require('../../models/subject.model');
 const Teacher = require('../../models/teacher.model');
+const TeacherAssignment = require('../../models/TeacherAssignment.model');
+const Timetable = require('../../models/Timetable.model');
+const Homework = require('../../models/homework.model');
 
 const getDayBounds = (date = new Date()) => {
   const start = new Date(date);
@@ -139,6 +142,44 @@ const getDashboardAnalytics = async () => {
   };
 };
 
+const getTeacherDashboardAnalytics = async (teacherId) => {
+  const now = new Date();
+  const { start: startOfToday } = getDayBounds(now);
+  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const todayName = dayNames[now.getDay()];
+
+  const [
+    activeAssignments,
+    totalHomework,
+    upcomingMeetings,
+    todayTimetable,
+  ] = await Promise.all([
+    TeacherAssignment.countDocuments({ teacherId, status: 'active' }),
+    Homework.countDocuments({ teacherId }),
+    Meeting.find({ teacherId, meetingDate: { $gte: startOfToday } })
+      .sort({ meetingDate: 1, startTime: 1 })
+      .limit(5)
+      .populate({ path: 'classId', select: 'name' })
+      .populate({ path: 'sectionId', select: 'name' })
+      .populate({ path: 'subjectId', select: 'name code' })
+      .lean(),
+    Timetable.find({ teacherId, dayOfWeek: todayName, status: 'active' })
+      .sort({ periodNumber: 1, startTime: 1 })
+      .populate({ path: 'classId', select: 'name' })
+      .populate({ path: 'sectionId', select: 'name' })
+      .populate({ path: 'subjectId', select: 'name code' })
+      .lean(),
+  ]);
+
+  return {
+    activeAssignments,
+    totalHomework,
+    upcomingMeetings,
+    todayTimetable,
+  };
+};
+
 module.exports = {
   getDashboardAnalytics,
+  getTeacherDashboardAnalytics,
 };

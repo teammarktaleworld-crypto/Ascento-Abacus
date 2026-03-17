@@ -11,6 +11,7 @@ const eventRoutes = require('../modules/event/event.routes');
 const studentFeeRoutes = require('../modules/fee/student.routes');
 const studentHomeworkRoutes = require('../modules/homework/student.routes');
 const studentMarksRoutes = require('../modules/marks/student.routes');
+const teacherDashboardRoutes = require('../modules/dashboard/teacher.routes');
 const classMeetingRoutes = require('../modules/meeting/class.routes');
 const notificationRoutes = require('../modules/notification/notification.routes');
 const classReportCardRoutes = require('../modules/report-card/class.routes');
@@ -67,6 +68,9 @@ router.use('/admin', adminRoutes);
 
 // Teacher self-service API → POST /api/teachers/change-password
 router.use('/teachers', teacherSelfRoutes);
+
+// Teacher dashboard API → GET /api/teacher/dashboard
+router.use('/teacher', teacherDashboardRoutes);
 
 // Teacher attendance API → POST /api/teacher/attendance
 router.use('/teacher', teacherAttendanceRoutes);
