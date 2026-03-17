@@ -92,28 +92,33 @@ const clearSessionKeyForUser = async (userModel, userId) => {
 /**
  * Authenticate a user and create a new session.
  *
- * @param {{ email: string, password: string, role: string }} credentials
+ * @param {{ identifier?: string, email?: string, userId?: string, password: string, role: string }} credentials
  * @param {{ ipAddress?: string, userAgent?: string }}        meta
  * @returns {{ sessionKey: string, expiresAt: Date, user: object }}
  */
-const login = async ({ email, password, role }, { ipAddress, userAgent } = {}) => {
+const login = async ({ identifier, email, userId, password, role }, { ipAddress, userAgent } = {}) => {
   const config = ROLE_CONFIG[role];
   if (!config) {
     throw new AppError(`Invalid role '${role}'. Must be one of: admin, teacher, student, parent.`, 400);
   }
 
+  const loginIdentifier = (identifier || email || userId || '').toString().trim();
+  if (!loginIdentifier) {
+    throw new AppError('identifier is required for login.', 400);
+  }
+
   const UserModel = config.getModel();
 
   // Fetch user with password (field is select:false by default)
-  const user = await UserModel.findOne(buildLoginQuery(role, email)).select('+password');
+  const user = await UserModel.findOne(buildLoginQuery(role, loginIdentifier)).select('+password');
   if (!user) {
     // Use a generic message to avoid user-enumeration
-    throw new AppError('Invalid email or password.', 401);
+    throw new AppError('Invalid identifier or password.', 401);
   }
 
   const isMatch = await user.comparePassword(password);
   if (!isMatch) {
-    throw new AppError('Invalid email or password.', 401);
+    throw new AppError('Invalid identifier or password.', 401);
   }
 
   if (!isUserActive(user)) {

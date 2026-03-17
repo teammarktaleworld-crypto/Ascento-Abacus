@@ -8,23 +8,24 @@ const AppError = require('../core/AppError');
 // ─── POST /api/auth/login ────────────────────────────────────────────────────
 
 /**
- * Login with email + password + role.
+ * Login with identifier (email/userId) + password + role.
  *
- * Body: { email, password, role }
+ * Body: { identifier|email|userId, password, role }
  * Role must be one of: admin | teacher | student | parent
  */
 const login = asyncHandler(async (req, res) => {
-  const { email, password, role } = req.body;
+  const { email, userId, identifier, password, role } = req.body;
+  const loginIdentifier = identifier || email || userId;
 
-  if (!email || !password || !role) {
-    throw new AppError('email, password, and role are required.', 400);
+  if (!loginIdentifier || !password || !role) {
+    throw new AppError('identifier (or email/userId), password, and role are required.', 400);
   }
 
   const ipAddress = req.ip || req.headers['x-forwarded-for'] || null;
   const userAgent = req.headers['user-agent'] || null;
 
   const result = await authService.login(
-    { email, password, role },
+    { identifier: loginIdentifier, password, role },
     { ipAddress, userAgent },
   );
 

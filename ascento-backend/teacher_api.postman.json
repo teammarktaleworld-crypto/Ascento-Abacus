@@ -1,41 +1,123 @@
 {
   "info": {
     "name": "Teacher API Collection",
-    "description": "Postman collection for all teacher APIs",
+    "description": "Teacher onboarding and first-login password change flow",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    { "key": "baseUrl", "value": "https://ascento-abacus-backend.onrender.com/api" },
+    { "key": "adminEmail", "value": "admin@school.com" },
+    { "key": "adminPassword", "value": "admin@123" },
+    { "key": "adminSessionKey", "value": "" },
+    { "key": "domainId", "value": "" },
+    { "key": "suffix", "value": "{{$timestamp}}" },
+    { "key": "teacherId", "value": "" },
+    { "key": "teacherUserId", "value": "" },
+    { "key": "teacherEmail", "value": "" },
+    { "key": "teacherTempPassword", "value": "" },
+    { "key": "teacherNewPassword", "value": "Teacher@123" },
+    { "key": "teacherSessionKey", "value": "" }
+  ],
   "item": [
     {
-      "name": "Login (Teacher)",
+      "name": "01 Admin Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set('adminSessionKey', json.data.sessionKey);"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [{"key": "Content-Type", "value": "application/json"}],
-        "url": {
-          "raw": "https://ascento-abacus.onrender.com/api/auth/login",
-          "protocol": "https",
-          "host": ["ascento-abacus","onrender","com"],
-          "path": ["api","auth","login"]
-        },
+        "url": "{{baseUrl}}/auth/admin/login",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"teacher@example.com\",\n  \"password\": \"yourpassword\",\n  \"role\": \"teacher\"\n}"
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
         }
       }
     },
     {
-      "name": "Change Password",
+      "name": "02 Create Teacher By Admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set('teacherId', json.data.teacher._id);",
+              "pm.collectionVariables.set('teacherUserId', json.data.teacher.userId);",
+              "pm.collectionVariables.set('teacherEmail', json.data.teacherEmail);",
+              "pm.collectionVariables.set('teacherTempPassword', json.data.temporaryPassword);"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
-        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}, {"key": "Content-Type", "value": "application/json"}],
-        "url": {
-          "raw": "https://ascento-abacus.onrender.com/api/teachers/change-password",
-          "protocol": "https",
-          "host": ["ascento-abacus","onrender","com"],
-          "path": ["api","teachers","change-password"]
-        },
+        "header": [
+          {"key": "x-session-key", "value": "{{adminSessionKey}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "url": "{{baseUrl}}/admin/teachers",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"oldPassword\": \"yourpassword\",\n  \"newPassword\": \"newpassword\"\n}"
+          "raw": "{\n  \"name\": \"Aarav Sharma\",\n  \"email\": \"aarav.sharma.{{suffix}}@school.com\",\n  \"phone\": \"98{{suffix}}\",\n  \"domainId\": \"{{domainId}}\",\n  \"status\": \"active\",\n  \"address\": \"123 Main Street\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"country\": \"India\",\n  \"dateOfBirth\": \"1985-06-15\",\n  \"gender\": \"male\",\n  \"qualification\": \"M.Sc. Mathematics\",\n  \"experienceYears\": 10,\n  \"joiningDate\": \"2020-04-01\",\n  \"profilePhoto\": \"https://res.cloudinary.com/demo/image/upload/sample.jpg\"\n}"
+        }
+      }
+    },
+    {
+      "name": "03 Teacher Login With Temporary Password (userId)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set('teacherSessionKey', json.data.sessionKey);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": "{{baseUrl}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"identifier\": \"{{teacherUserId}}\",\n  \"password\": \"{{teacherTempPassword}}\",\n  \"role\": \"teacher\"\n}"
+        }
+      }
+    },
+    {
+      "name": "04 Change Password (first login)",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "x-session-key", "value": "{{teacherSessionKey}}"}, {"key": "Content-Type", "value": "application/json"}],
+        "url": "{{baseUrl}}/teachers/change-password",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"currentPassword\": \"{{teacherTempPassword}}\",\n  \"newPassword\": \"{{teacherNewPassword}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "05 Teacher Login With Permanent Password (email)",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": "{{baseUrl}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"identifier\": \"{{teacherEmail}}\",\n  \"password\": \"{{teacherNewPassword}}\",\n  \"role\": \"teacher\"\n}"
         }
       }
     },
