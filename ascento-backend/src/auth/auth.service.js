@@ -61,6 +61,15 @@ const buildLoginQuery = (role, identifier) => {
     };
   }
 
+  if (role === 'teacher') {
+    return {
+      $or: [
+        { email: normalized },
+        { userId: identifier.trim() },
+      ],
+    };
+  }
+
   return { email: normalized };
 };
 
