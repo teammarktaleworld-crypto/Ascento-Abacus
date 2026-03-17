@@ -8,7 +8,6 @@ const auditFieldsPlugin = require('./plugins/auditFields.plugin');
 const teacherSchema = new mongoose.Schema({
   userId: {
     type: String,
-    required: true,
     unique: true,
     index: true,
     default: function () { return undefined; }, // allow pre-save hook to generate
