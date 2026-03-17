@@ -1,0 +1,173 @@
+# Step-by-Step Backend Build Roadmap
+
+This guide gives you a clear, story-like flow for building your backend, from foundation to features. Follow each step in order for a smooth, testable, and maintainable project.
+
+---
+
+## 1. Foundation: Project Setup
+
+### Example API
+**GET /health** — Returns OK if server is running.
+- **Initialize Node.js project**: Set up package.json, install Express, Mongoose, dotenv, helmet, compression, cors, express-rate-limit, winston, morgan, uuid.
+- **Folder structure**: Create folders: config, core, middleware, auth, services, models, modules, utils, validators, routes.
+- **Environment variables**: Add .env with all secrets and config (see below for sample values).
+- **Logger**: Set up Winston + morgan for request and error logging.
+- **Database**: Connect to MongoDB using Mongoose.
+- **Server**: Create server.js to start Express app on PORT=4000.
+- **Base middleware**: Add helmet, compression, cors, rate limiter, JSON parser.
+- **ApiResponse utility**: Standardize all API responses.
+- **Central error handler**: Catch and format all errors.
+
+---
+
+## 2. Core Systems
+
+### Example APIs
+**POST /auth/admin/login** — Admin login, returns sessionKey.
+**GET /admin/profile** — Get admin profile (requires sessionKey).
+- **Session system**: Use uuid to generate sessionKey for logins. Store sessionKey in user models.
+- **Role system**: Define roles (ADMIN, TEACHER, STUDENT, PARENT). Create validateSession and validateRole middleware.
+- **Audit fields**: Add createdBy, updatedBy, createdAt, updatedAt to all main models (use Mongoose plugin).
+
+---
+
+## 3. Base Models
+
+### Example APIs
+**POST /auth/admin/login** — Login as admin.
+**POST /auth/teacher/login** — Login as teacher.
+**POST /auth/student/login** — Login as student.
+- **Admin, Teacher, Student**: Create models with required fields, sessionKey, isPasswordTemporary, and unique indexes (email/rollNumber).
+
+---
+
+## 4. Authentication System
+
+### Example APIs
+**POST /auth/admin/login** — Admin login, returns sessionKey and profile.
+**POST /auth/admin/logout** — Logout admin.
+**GET /admin/profile** — Get admin profile.
+**PUT /admin/change-password** — Change admin password.
+- **Admin login/logout**: POST /auth/admin/login, /logout. On login, generate sessionKey, return adminProfile (never expose password).
+- **Admin profile & password**: GET /admin/profile, PUT /admin/change-password.
+- **Middleware**: Use validateSession and validateRole to protect admin routes.
+
+---
+
+## 5. Domain & Academic Structure Modules
+
+### Example APIs
+**POST /admin/domains** — Create domain.
+**GET /admin/domains** — List all domains.
+**POST /admin/classes** — Create class.
+**GET /admin/classes** — List all classes.
+**POST /admin/sections** — Create section.
+**GET /admin/sections** — List all sections.
+**POST /admin/subjects** — Create subject.
+**GET /admin/subjects** — List all subjects (with class details).
+- **Domain**: CRUD for domains (school, coaching, etc.).
+- **Class**: CRUD for classes, linked to domain.
+- **Section**: CRUD for sections, linked to class.
+- **Subject**: CRUD for subjects, unique per class, include class details in GET.
+
+---
+
+## 6. Teacher & Assignment
+
+### Example APIs
+**POST /admin/teachers** — Create teacher (returns temp password).
+**GET /admin/teachers** — List teachers.
+**POST /admin/assign-teacher** — Assign teacher to class/section/subject/year.
+**GET /admin/teacher-assignments** — List teacher assignments.
+- **Teacher model**: All fields, unique email, sessionKey, temp password.
+- **Teacher CRUD**: Admin creates teachers, system generates temp password.
+- **Teacher assignment**: Assign teacher to class/section/subject/academicYear, never overwrite previous years.
+
+---
+
+## 7. Student & Enrollment
+
+### Example APIs
+**POST /admin/students** — Create student (returns temp password).
+**GET /admin/students** — List students.
+**POST /admin/enroll-student** — Enroll student in class/section/year.
+**POST /admin/promote-student** — Promote student to next class/year.
+**GET /student/current-class** — Get student’s current class.
+- **Student model**: All fields, unique rollNumber, sessionKey, temp password.
+- **Enrollment**: Assign student to class/section/academicYear, support promotions.
+- **Promotion**: POST /admin/promote-student, creates new enrollment for next year.
+
+---
+
+## 8. Attendance, Homework, Exams, Marks
+
+### Example APIs
+**POST /teacher/attendance** — Mark attendance.
+**GET /admin/attendance** — Admin views attendance.
+**POST /teacher/homework** — Assign homework.
+**GET /student/homework** — Student views homework.
+**POST /admin/academic-years** — Create academic year.
+**GET /academic-years/active** — Get active academic year.
+**POST /admin/exams** — Create exam.
+**GET /class/exams/:classId** — List exams for class.
+**POST /teacher/marks** — Enter marks.
+**GET /student/marks** — Student views marks.
+- **Attendance**: CRUD for attendance by teacher/admin/student.
+- **Homework**: Teachers assign, students view.
+- **Academic year**: Only one active at a time, auto-inactivate previous on new active.
+- **Exam & Exam Subject**: CRUD for exams and subjects per class/year.
+- **Marks**: Teachers enter marks, validation on assignment.
+
+---
+
+## 9. Reports, Fees, Meetings, Reminders, Events, Enquiries, Notifications
+
+### Example APIs
+**GET /student/report-card** — Student views report card.
+**POST /admin/fees** — Create fee record.
+**GET /student/fees** — Student views fees.
+**POST /teacher/meetings** — Schedule meeting.
+**POST /admin/reminders** — Set reminder.
+**POST /admin/events** — Create event.
+**POST /enquiry** — Website enquiry form.
+**POST /admin/notifications** — Send notification.
+- **Report card**: Generate and view by student/class/admin.
+- **Fee management**: CRUD for fees, payment status, student view.
+- **Meetings**: Teachers schedule, class/subject/section linked.
+- **Reminders**: Admin sets reminders for students/classes/teachers.
+- **Events**: Admin creates, all view.
+- **Enquiries**: Website form, admin manages.
+- **Notifications**: Admin sends, targeted or broadcast.
+
+---
+
+## 10. Dashboard Analytics
+
+### Example API
+**GET /admin/dashboard** — Get admin dashboard analytics.
+- **Admin dashboard**: Show stats (students, teachers, classes, subjects, attendance, fees, meetings, notices, enquiries).
+
+---
+
+## .env Sample (fill with your values)
+```
+PORT=4000
+MONGO_URI=your_mongo_uri
+JWT_EXPIRE_TIME=7d
+JWT_ACCESS_SECRET=secret123
+JWT_REFRESH_SECRET=refreshsecret123
+ACCESS_TOKEN_EXPIRES=15m
+REFRESH_TOKEN_EXPIRES=7d
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX=200
+BCRYPT_SALT_ROUNDS=10
+ADMIN_EMAIL=admin@school.com
+ADMIN_PASSWORD=admin@123
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+---
+
+**Follow this roadmap step by step. Build, test, and commit after each phase. This keeps your backend clean, testable, and easy for anyone to understand!**

@@ -1,0 +1,226 @@
+{
+  "info": {
+    "name": "Teacher API Collection",
+    "description": "Postman collection for all teacher APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login (Teacher)",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/auth/login",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","auth","login"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"teacher@example.com\",\n  \"password\": \"yourpassword\",\n  \"role\": \"teacher\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Change Password",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}, {"key": "Content-Type", "value": "application/json"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/teachers/change-password",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","teachers","change-password"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"oldPassword\": \"yourpassword\",\n  \"newPassword\": \"newpassword\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/teacher/dashboard",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","teacher","dashboard"]
+        }
+      }
+    },
+    {
+      "name": "Mark Attendance",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}, {"key": "Content-Type", "value": "application/json"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/teacher/attendance",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","teacher","attendance"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"class\": \"5A\",\n  \"date\": \"2026-03-17\",\n  \"students\": [\n    {\"name\": \"John Doe\", \"status\": \"present\"},\n    {\"name\": \"Jane Doe\", \"status\": \"absent\"}\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Attendance",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/teacher/attendance?class=5A&date=2026-03-17",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","teacher","attendance"],
+          "query": [
+            {"key": "class", "value": "5A"},
+            {"key": "date", "value": "2026-03-17"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Assignment",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}, {"key": "Content-Type", "value": "application/json"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/teacher/homework",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","teacher","homework"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Math Homework\",\n  \"description\": \"Solve algebra problems\",\n  \"dueDate\": \"2026-03-20\",\n  \"class\": \"5A\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Update Assignment",
+      "request": {
+        "method": "PUT",
+        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}, {"key": "Content-Type", "value": "application/json"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/teacher/homework/assignmentId",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","teacher","homework","assignmentId"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Updated Homework\",\n  \"description\": \"New description\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Delete Assignment",
+      "request": {
+        "method": "DELETE",
+        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/teacher/homework/assignmentId",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","teacher","homework","assignmentId"]
+        }
+      }
+    },
+    {
+      "name": "Get Assignments",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/teacher/homework?class=5A",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","teacher","homework"],
+          "query": [
+            {"key": "class", "value": "5A"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Content",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}, {"key": "Content-Type", "value": "application/json"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/teacher/content",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","teacher","content"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Math Notes\",\n  \"description\": \"Algebra basics\",\n  \"type\": \"note\",\n  \"classId\": \"classObjectId\",\n  \"studentId\": \"studentObjectId\",\n  \"visibleTo\": [\"studentObjectId\"]\n}"
+        }
+      }
+    },
+    {
+      "name": "Update Content",
+      "request": {
+        "method": "PUT",
+        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}, {"key": "Content-Type", "value": "application/json"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/teacher/content/contentId",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","teacher","content","contentId"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Updated Notes\",\n  \"description\": \"Updated description\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Delete Content",
+      "request": {
+        "method": "DELETE",
+        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/teacher/content/contentId",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","teacher","content","contentId"]
+        }
+      }
+    },
+    {
+      "name": "Get All Content",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/teacher/content",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","teacher","content"]
+        }
+      }
+    },
+    {
+      "name": "Get Content for Student",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "x-session-key", "value": "{{sessionKey}}"}],
+        "url": {
+          "raw": "https://ascento-abacus.onrender.com/api/teacher/content/studentObjectId",
+          "protocol": "https",
+          "host": ["ascento-abacus","onrender","com"],
+          "path": ["api","teacher","content","studentObjectId"]
+        }
+      }
+    }
+  ]
+}

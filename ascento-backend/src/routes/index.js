@@ -25,6 +25,7 @@ const teacherTimetableRoutes = require('../modules/timetable/teacher.routes');
 const { authRouter: adminAuthRoutes, adminRouter: adminRoutes } = require('../modules/admin/admin.routes');
 const studentSelfRoutes = require('../modules/student-enrollment/student.self.routes');
 const teacherSelfRoutes = require('../modules/teacher/teacher.self.routes');
+const teacherContentRoutes = require('../modules/content/content.routes');
 
 const router = express.Router();
 
@@ -58,6 +59,8 @@ router.use('/academic-years', academicYearPublicRoutes);
 
 // Admin auth  → POST /api/auth/admin/login | POST /api/auth/admin/logout
 router.use('/auth/admin', adminAuthRoutes);
+// Teacher content API → CRUD /api/teacher/content
+router.use('/teacher', teacherContentRoutes);
 
 // Admin API   → GET  /api/admin/profile | PUT /api/admin/change-password
 router.use('/admin', adminRoutes);
