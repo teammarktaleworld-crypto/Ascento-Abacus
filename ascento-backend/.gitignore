@@ -7,3 +7,5 @@ logs/
 *.log
 .DS_Store
 test.json
+
+/src/generated/prisma
