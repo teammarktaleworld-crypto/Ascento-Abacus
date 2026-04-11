@@ -1,0 +1,736 @@
+// ─── Ascento Abacus — PostgreSQL Schema ──────────────────────────────────────
+// Migrated from MongoDB/Mongoose models. All relationships are explicit FKs.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  admin
+  teacher
+  student
+  parent
+}
+
+enum Status {
+  active
+  inactive
+}
+
+enum Gender {
+  male
+  female
+  other
+}
+
+enum AttendanceStatus {
+  present
+  absent
+  late
+}
+
+enum PaymentStatus {
+  pending
+  paid
+}
+
+enum PaymentMethod {
+  cash
+  card
+  upi
+  bank_transfer
+  other
+}
+
+enum DayOfWeek {
+  monday
+  tuesday
+  wednesday
+  thursday
+  friday
+  saturday
+  sunday
+}
+
+enum ParentRelation {
+  father
+  mother
+  guardian
+  other
+}
+
+enum EnquiryStatus {
+  new
+  in_progress
+  closed
+}
+
+enum NotificationTarget {
+  student
+  teacher
+  class
+  broadcast
+}
+
+enum ReminderTarget {
+  student
+  class
+  teacher
+}
+
+enum ContentType {
+  note
+  material
+  announcement
+}
+
+// ─── Domain ──────────────────────────────────────────────────────────────────
+
+model Domain {
+  id          String   @id @default(uuid())
+  name        String
+  code        String   @unique
+  description String   @default("")
+  status      Status   @default(active)
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  classes  Class[]
+  students Student[]
+  teachers Teacher[]
+
+  @@map("domains")
+}
+
+// ─── Academic Year ───────────────────────────────────────────────────────────
+
+model AcademicYear {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  startDate DateTime
+  endDate   DateTime
+  status    Status   @default(inactive)
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  fees       Fee[]
+  exams      Exam[]
+  timetables Timetable[]
+
+  @@map("academic_years")
+}
+
+// ─── Admin ───────────────────────────────────────────────────────────────────
+
+model Admin {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  password     String
+  phone        String?
+  role         Role     @default(admin)
+  isActive     Boolean  @default(true)
+  profileImage String?
+  createdBy    String?
+  updatedBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  notifications Notification[]
+
+  @@map("admins")
+}
+
+// ─── Student ─────────────────────────────────────────────────────────────────
+
+model Student {
+  id                  String   @id @default(uuid())
+  fullName            String
+  password            String
+  role                Role     @default(student)
+  dateOfBirth         DateTime?
+  age                 Int?
+  gender              Gender
+  parentName          String
+  parentPhone         String
+  parentEmail         String
+  domainId            String
+  userId              String   @unique
+  rollNumber          String   @unique
+  address             String?
+  city                String?
+  state               String?
+  bloodGroup          String?
+  profilePhoto        String?
+  sessionKey          String?
+  isPasswordTemporary Boolean  @default(false)
+  status              Status   @default(active)
+  createdBy           String?
+  updatedBy           String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  domain      Domain              @relation(fields: [domainId], references: [id])
+  enrollments StudentEnrollment[]
+  attendance  Attendance[]
+  fees        Fee[]
+  marks       Mark[]
+  contents    Content[]           @relation("ContentStudent")
+  visibleIn   Content[]           @relation("ContentVisibleTo")
+
+  @@index([domainId])
+  @@index([parentEmail])
+  @@map("students")
+}
+
+// ─── Teacher ─────────────────────────────────────────────────────────────────
+
+model Teacher {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  name                String
+  email               String    @unique
+  password            String
+  phone               String?
+  domainId            String
+  role                Role      @default(teacher)
+  status              Status    @default(active)
+  address             String?
+  city                String?
+  state               String?
+  country             String?
+  dateOfBirth         DateTime?
+  gender              Gender?
+  qualification       String?
+  experienceYears     Int       @default(0)
+  joiningDate         DateTime?
+  profilePhoto        String?
+  sessionKey          String?
+  mustChangePassword  Boolean   @default(false)
+  isPasswordTemporary Boolean   @default(false)
+  createdBy           String?
+  updatedBy           String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  domain      Domain              @relation(fields: [domainId], references: [id])
+  assignments TeacherAssignment[]
+  homework    Homework[]
+  marks       Mark[]
+  timetables  Timetable[]
+  meetings    Meeting[]
+  contents    Content[]
+
+  @@index([domainId])
+  @@map("teachers")
+}
+
+// ─── Parent ──────────────────────────────────────────────────────────────────
+
+model Parent {
+  id           String         @id @default(uuid())
+  name         String
+  email        String         @unique
+  password     String
+  phone        String?
+  role         Role           @default(parent)
+  occupation   String?
+  relation     ParentRelation @default(guardian)
+  isActive     Boolean        @default(true)
+  profileImage String?
+  createdBy    String?
+  updatedBy    String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  children ParentChild[]
+
+  @@map("parents")
+}
+
+// Junction table for Parent → Student (replaces children[] array in MongoDB)
+model ParentChild {
+  parentId  String
+  studentId String
+
+  parent  Parent  @relation(fields: [parentId], references: [id], onDelete: Cascade)
+
+  @@id([parentId, studentId])
+  @@map("parent_children")
+}
+
+// ─── Class ───────────────────────────────────────────────────────────────────
+
+model Class {
+  id          String   @id @default(uuid())
+  name        String
+  domainId    String
+  description String   @default("")
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  domain      Domain              @relation(fields: [domainId], references: [id])
+  sections    Section[]
+  subjects    Subject[]
+  enrollments StudentEnrollment[]
+  assignments TeacherAssignment[]
+  attendance  Attendance[]
+  fees        Fee[]
+  exams       Exam[]
+  homework    Homework[]
+  timetables  Timetable[]
+  meetings    Meeting[]
+  contents    Content[]
+  notifications Notification[]
+
+  @@unique([name, domainId])
+  @@index([domainId])
+  @@map("classes")
+}
+
+// ─── Section ─────────────────────────────────────────────────────────────────
+
+model Section {
+  id        String   @id @default(uuid())
+  name      String
+  classId   String
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  class       Class               @relation(fields: [classId], references: [id])
+  enrollments StudentEnrollment[]
+  assignments TeacherAssignment[]
+  attendance  Attendance[]
+  homework    Homework[]
+  timetables  Timetable[]
+  meetings    Meeting[]
+
+  @@unique([name, classId])
+  @@index([classId])
+  @@map("sections")
+}
+
+// ─── Subject ─────────────────────────────────────────────────────────────────
+
+model Subject {
+  id          String   @id @default(uuid())
+  name        String
+  code        String
+  classId     String
+  description String   @default("")
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  class        Class               @relation(fields: [classId], references: [id])
+  assignments  TeacherAssignment[]
+  marks        Mark[]
+  examSubjects ExamSubject[]
+  homework     Homework[]
+  timetables   Timetable[]
+  meetings     Meeting[]
+
+  @@unique([name, classId])
+  @@index([classId])
+  @@map("subjects")
+}
+
+// ─── Student Enrollment ──────────────────────────────────────────────────────
+
+model StudentEnrollment {
+  id           String   @id @default(uuid())
+  studentId    String
+  classId      String
+  sectionId    String
+  academicYear String
+  status       Status   @default(active)
+  createdBy    String?
+  updatedBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id])
+  class   Class   @relation(fields: [classId], references: [id])
+  section Section @relation(fields: [sectionId], references: [id])
+
+  @@unique([studentId, academicYear])
+  @@index([classId])
+  @@index([sectionId])
+  @@map("student_enrollments")
+}
+
+// ─── Teacher Assignment ──────────────────────────────────────────────────────
+
+model TeacherAssignment {
+  id           String   @id @default(uuid())
+  teacherId    String
+  classId      String
+  sectionId    String
+  subjectId    String
+  academicYear String
+  status       Status   @default(active)
+  createdBy    String?
+  updatedBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+  class   Class   @relation(fields: [classId], references: [id])
+  section Section @relation(fields: [sectionId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  @@unique([teacherId, classId, sectionId, subjectId, academicYear])
+  @@map("teacher_assignments")
+}
+
+// ─── Attendance ──────────────────────────────────────────────────────────────
+
+model Attendance {
+  id           String           @id @default(uuid())
+  studentId    String
+  classId      String
+  sectionId    String
+  academicYear String
+  date         DateTime
+  status       AttendanceStatus
+  createdBy    String?
+  updatedBy    String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id])
+  class   Class   @relation(fields: [classId], references: [id])
+  section Section @relation(fields: [sectionId], references: [id])
+
+  @@unique([studentId, date])
+  @@index([classId])
+  @@index([sectionId])
+  @@index([date])
+  @@map("attendance")
+}
+
+// ─── Fee ─────────────────────────────────────────────────────────────────────
+
+model Fee {
+  id                   String         @id @default(uuid())
+  studentId            String
+  classId              String
+  academicYearId       String
+  feeType              String
+  amount               Decimal        @db.Decimal(10, 2)
+  dueDate              DateTime
+  paymentStatus        PaymentStatus  @default(pending)
+  paymentDate          DateTime?
+  paymentMethod        PaymentMethod?
+  transactionReference String?
+  createdBy            String?
+  updatedBy            String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  student      Student      @relation(fields: [studentId], references: [id])
+  class        Class        @relation(fields: [classId], references: [id])
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  @@unique([studentId, classId, academicYearId, feeType])
+  @@index([paymentStatus])
+  @@map("fees")
+}
+
+// ─── Exam ────────────────────────────────────────────────────────────────────
+
+model Exam {
+  id              String   @id @default(uuid())
+  examName        String
+  classId         String
+  academicYearId  String
+  examStartDate   DateTime
+  examEndDate     DateTime
+  description     String   @default("")
+  status          String   @default("active")
+  createdBy       String?
+  updatedBy       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  class        Class        @relation(fields: [classId], references: [id])
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id])
+  examSubjects ExamSubject[]
+  marks        Mark[]
+
+  @@unique([classId, academicYearId, examName, examStartDate])
+  @@map("exams")
+}
+
+// ─── Exam Subject ────────────────────────────────────────────────────────────
+
+model ExamSubject {
+  id           String   @id @default(uuid())
+  examId       String
+  subjectId    String
+  totalMarks   Int
+  passingMarks Int
+  examDate     DateTime
+  startTime    String
+  endTime      String
+  createdBy    String?
+  updatedBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  exam    Exam    @relation(fields: [examId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  @@unique([examId, subjectId])
+  @@map("exam_subjects")
+}
+
+// ─── Mark ────────────────────────────────────────────────────────────────────
+
+model Mark {
+  id                 String   @id @default(uuid())
+  studentId          String
+  examId             String
+  subjectId          String
+  marksObtained      Decimal  @db.Decimal(5, 2)
+  remarks            String   @default("")
+  enteredByTeacherId String
+  createdBy          String?
+  updatedBy          String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id])
+  exam    Exam    @relation(fields: [examId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+  teacher Teacher @relation(fields: [enteredByTeacherId], references: [id])
+
+  @@unique([studentId, examId, subjectId])
+  @@map("marks")
+}
+
+// ─── Homework ────────────────────────────────────────────────────────────────
+
+model Homework {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @default("")
+  classId     String
+  sectionId   String
+  subjectId   String
+  teacherId   String
+  dueDate     DateTime
+  attachments String[] @default([])
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  class   Class   @relation(fields: [classId], references: [id])
+  section Section @relation(fields: [sectionId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  @@index([classId, sectionId, dueDate])
+  @@map("homework")
+}
+
+// ─── Timetable ───────────────────────────────────────────────────────────────
+
+model Timetable {
+  id             String      @id @default(uuid())
+  classId        String
+  sectionId      String
+  subjectId      String
+  teacherId      String
+  academicYearId String
+  dayOfWeek      DayOfWeek
+  periodNumber   Int
+  startTime      String
+  endTime        String
+  status         Status      @default(active)
+  createdBy      String?
+  updatedBy      String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  class        Class        @relation(fields: [classId], references: [id])
+  section      Section      @relation(fields: [sectionId], references: [id])
+  subject      Subject      @relation(fields: [subjectId], references: [id])
+  teacher      Teacher      @relation(fields: [teacherId], references: [id])
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  // Note: Partial unique indexes (where status='active') are handled via custom SQL migration
+  @@index([classId, sectionId, academicYearId, dayOfWeek])
+  @@index([teacherId, academicYearId, dayOfWeek])
+  @@map("timetables")
+}
+
+// ─── Meeting ─────────────────────────────────────────────────────────────────
+
+model Meeting {
+  id          String   @id @default(uuid())
+  title       String
+  classId     String
+  sectionId   String
+  subjectId   String
+  teacherId   String
+  meetingLink String
+  meetingDate DateTime
+  startTime   String
+  endTime     String
+  description String   @default("")
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  class   Class   @relation(fields: [classId], references: [id])
+  section Section @relation(fields: [sectionId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  @@index([classId, meetingDate, startTime])
+  @@map("meetings")
+}
+
+// ─── Notification ────────────────────────────────────────────────────────────
+
+model Notification {
+  id             String             @id @default(uuid())
+  notificationId String             @unique @default(uuid())
+  title          String
+  message        String
+  targetType     NotificationTarget
+  targetId       String?
+  createdById    String
+  status         Status             @default(active)
+  updatedBy      String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  createdBy Admin  @relation(fields: [createdById], references: [id])
+  class     Class? @relation(fields: [targetId], references: [id], map: "notifications_class_fk")
+
+  @@index([targetType, targetId, createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+// ─── Event ───────────────────────────────────────────────────────────────────
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @default("")
+  eventDate   DateTime
+  location    String   @default("")
+  attachments String[] @default([])
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([eventDate, title])
+  @@map("events")
+}
+
+// ─── Reminder ────────────────────────────────────────────────────────────────
+
+model Reminder {
+  id           String         @id @default(uuid())
+  title        String
+  description  String         @default("")
+  targetType   ReminderTarget
+  targetId     String
+  reminderDate DateTime
+  createdBy    String?
+  updatedBy    String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([targetType, targetId, reminderDate])
+  @@map("reminders")
+}
+
+// ─── Enquiry ─────────────────────────────────────────────────────────────────
+
+model Enquiry {
+  id              String        @id @default(uuid())
+  fullName        String
+  email           String
+  phoneNumber     String
+  classInterested String
+  message         String
+  status          EnquiryStatus @default(new)
+  createdBy       String?
+  updatedBy       String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([email, phoneNumber, createdAt(sort: Desc)])
+  @@index([status])
+  @@map("enquiries")
+}
+
+// ─── Session ─────────────────────────────────────────────────────────────────
+
+model Session {
+  id         String   @id @default(uuid())
+  userId     String
+  userModel  String   // 'Admin', 'Teacher', 'Student', 'Parent'
+  sessionKey String   @unique
+  role       Role
+  isActive   Boolean  @default(true)
+  expiresAt  DateTime
+  ipAddress  String?
+  userAgent  String?
+  createdBy  String?
+  updatedBy  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// ─── Content ─────────────────────────────────────────────────────────────────
+
+model Content {
+  id          String      @id @default(uuid())
+  title       String
+  description String?
+  type        ContentType @default(note)
+  classId     String?
+  studentId   String?
+  createdById String
+  date        DateTime    @default(now())
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  class     Class?    @relation(fields: [classId], references: [id])
+  student   Student?  @relation("ContentStudent", fields: [studentId], references: [id])
+  teacher   Teacher   @relation(fields: [createdById], references: [id])
+  visibleTo Student[] @relation("ContentVisibleTo")
+
+  @@map("contents")
+}
